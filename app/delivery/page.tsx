@@ -1,6 +1,6 @@
 "use client"
-import React, { useState } from 'react';
-import { MapPin, Truck, CreditCard, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin, CreditCard, CheckCircle } from 'lucide-react';
 
 const DeliveryPaymentPage = () => {
     const [step, setStep] = useState(1);
