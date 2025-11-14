@@ -6,7 +6,7 @@ const AuthPage = () => {
     // Состояние для переключения между Входом (true) и Регистрацией (false)
     const [isLogin, setIsLogin] = useState(true);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: { preventDefault: () => void; }) => {
         e.preventDefault();
         const action = isLogin ? 'Вход' : 'Регистрация';
         console.log(`${action} нажата`);

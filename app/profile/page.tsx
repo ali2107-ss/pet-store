@@ -19,7 +19,7 @@ const ProfilePage = () => {
         { id: '#9874', status: 'Отменен', total: 6100, date: '01.05.2024' },
     ];
 
-    const OrderItem = ({ order }) => (
+    const OrderItem = ({ order }: { order: typeof orders[0] }) => (
         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm">
             <div>
                 <p className="font-semibold text-gray-800">Заказ {order.id}</p>
@@ -98,7 +98,7 @@ const ProfilePage = () => {
                             className="w-24 h-24 rounded-full object-cover border-4 border-indigo-200"
                             src={user.avatar} 
                             alt={user.name} 
-                            onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/150x150/6B46C1/ffffff?text=АП"; }}
+                            onError={(e) => { const img = e.target as HTMLImageElement; img.onerror = null; img.src="https://placehold.co/150x150/6B46C1/ffffff?text=АП"; }}
                         />
                         <div>
                             <h1 className="text-3xl font-extrabold text-gray-900">{user.name}</h1>

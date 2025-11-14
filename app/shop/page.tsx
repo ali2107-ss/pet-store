@@ -2,14 +2,23 @@ import React from 'react';
 import { ShoppingCart, Heart, Search } from 'lucide-react';
 
 // Моковые данные о товарах
-const products = [
-  { id: 1, name: 'Сухой корм для котят', price: 1200, category: 'Еда', image: 'https://placehold.co/400x300/4F46E5/FFFFFF?text=Корм', rating: 4.5 },
-  { id: 2, name: 'Мягкий домик-лежанка', price: 2500, category: 'Аксессуары', image: 'https://placehold.co/400x300/F97316/FFFFFF?text=Домик', rating: 5.0 },
-  { id: 3, name: 'Игрушка-мышка (3 шт.)', price: 350, category: 'Игрушки', image: 'https://placehold.co/400x300/10B981/FFFFFF?text=Игрушка', rating: 4.0 },
-  { id: 4, name: 'Витамины для шерсти', price: 890, category: 'Здоровье', image: 'https://placehold.co/400x300/EF4444/FFFFFF?text=Витамины', rating: 4.8 },
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  image: string;
+  rating: number;
+}
+
+const products: Product[] = [
+  { id: 1, name: 'Сухой корм для собак', price: 1200, category: 'Еда', image: 'https://placehold.co/400x300/FFD166/000000?text=Корм', rating: 4.5 },
+  { id: 2, name: 'Мягкая игрушка', price: 350, category: 'Игрушки', image: 'https://placehold.co/400x300/06D6A0/000000?text=Игрушка', rating: 4.0 },
+  { id: 3, name: 'Когтеточка', price: 1290, category: 'Аксессуары', image: 'https://placehold.co/400x300/EF476F/FFFFFF?text=Когтеточка', rating: 4.3 },
+  { id: 4, name: 'Шампунь для кошек', price: 450, category: 'Здоровье', image: 'https://placehold.co/400x300/118AB2/FFFFFF?text=Шампунь', rating: 4.1 },
 ];
 
-const ProductCard = ({ product }) => (
+const ProductCard = ({ product }: { product: Product }) => (
   <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col">
     <div className="relative h-48 overflow-hidden">
       <img
@@ -17,7 +26,7 @@ const ProductCard = ({ product }) => (
         alt={product.name}
         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
       />
-      <button className="absolute top-3 right-3 p-2 bg-white rounded-full text-red-500 shadow-md hover:bg-red-50 hover:text-red-600 transition">
+      <button title="Add to favorites" className="absolute top-3 right-3 p-2 bg-white rounded-full text-red-500 shadow-md hover:bg-red-50 hover:text-red-600 transition">
         <Heart className="w-5 h-5" fill="currentColor" />
       </button>
     </div>
@@ -55,7 +64,7 @@ const ShopPage = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             </div>
             
-            <select className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 md:w-1/4">
+            <select aria-label="Фильтр по категориям" className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 md:w-1/4">
               <option>Все категории</option>
               <option>Еда</option>
               <option>Аксессуары</option>
