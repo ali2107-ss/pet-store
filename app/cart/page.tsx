@@ -26,11 +26,11 @@ const CartItem = ({ item }: { item: any }) => (
 
         <div className="flex items-center space-x-4 ml-4">
             <div className="flex items-center border border-gray-300 rounded-lg">
-                <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-l-lg">
+                <button type="button" aria-label="Уменьшить количество" title="Уменьшить количество" className="p-2 text-gray-600 hover:bg-gray-100 rounded-l-lg">
                     <Minus className="w-4 h-4" />
                 </button>
                 <span className="px-3 text-lg font-medium text-gray-800">{item.quantity}</span>
-                <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-r-lg">
+                <button type="button" aria-label="Увеличить количество" title="Увеличить количество" className="p-2 text-gray-600 hover:bg-gray-100 rounded-r-lg">
                     <Plus className="w-4 h-4" />
                 </button>
             </div>
@@ -39,7 +39,7 @@ const CartItem = ({ item }: { item: any }) => (
                 {(item.price * item.quantity).toLocaleString()} ₸
             </p>
 
-            <button className="p-3 text-red-500 hover:bg-red-100 rounded-full transition duration-150">
+            <button type="button" aria-label="Удалить товар из корзины" title="Удалить товар" className="p-3 text-red-500 hover:bg-red-100 rounded-full transition duration-150">
                 <Trash2 className="w-5 h-5" />
             </button>
         </div>
