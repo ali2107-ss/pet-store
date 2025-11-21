@@ -4,7 +4,7 @@ import { User, ShoppingBag, MapPin, Heart, LogOut, Settings } from 'lucide-react
 const ProfilePage = () => {
     const [activeTab, setActiveTab] = useState('orders');
 
-    // Моковые данные пользователя
+    
     const user = {
         name: 'Асель Айдарова',
         email: 'asel.a@example.com',
