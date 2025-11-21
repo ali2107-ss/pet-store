@@ -57,8 +57,16 @@ const LocationPage = () => {
                 {/* Карта (заглушка) */}
                 <div className="mt-10">
                     <h2 className="text-3xl font-bold text-gray-900 mb-4">Наше расположение на карте</h2>
-                    <div className="w-full h-80 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500 text-xl font-medium border-4 border-dashed border-gray-400">
-                        [Здесь будет интерактивная карта]
+                    <div className="w-full h-80 rounded-xl overflow-hidden"> 
+                        <iframe
+                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4567.050323707232!2d51.89816129952522!3d47.10721810864396!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x41a3e98ef74be4b5%3A0x3887796210a6fdfa!2z0KLQoNCmICJCYWl6YWFyIg!5e0!3m2!1sru!2skz!4v1763733236931!5m2!1sru!2skz"
+                             width="100%"
+                             height="100%"
+                             style={{ border: 0 }}
+                             allowFullScreen
+                             loading="lazy"
+                             referrerPolicy="no-referrer-when-downgrade"
+                         ></iframe>
                     </div>
                 </div>
             </div>
