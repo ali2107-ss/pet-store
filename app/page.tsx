@@ -68,9 +68,9 @@ const FeaturedProductCard = ({ product }: { product: any }) => (
 
 const HomePage = () => {
     const categories = [
-        { title: 'Для кошек', image: 'https://placehold.co/600x800/dbeafe/1e40af?text=Кошки', color: '#3B82F6' },
-        { title: 'Для собак', image: 'https://placehold.co/600x800/fee2e2/991b1b?text=Собаки', color: '#EF4444' },
-        { title: 'Грызуны и птицы', image: 'https://placehold.co/600x800/dcfce7/166534?text=Птицы', color: '#22C55E' },
+        { title: 'Для кошек', image: '/кошка.png', color: '#3B82F6' },
+        { title: 'Для собак', image: '/собака.png', color: '#EF4444' },
+        { title: 'Грызуны и птицы', image: '/птицы.png', color: '#22C55E' },
     ];
     
     const featuredProducts = [
@@ -122,11 +122,12 @@ const HomePage = () => {
                             <div className="relative w-80 h-80 md:w-[500px] md:h-[500px]">
                                 {/* Декоративные круги на фоне */}
                                 <div className="absolute top-0 right-0 w-full h-full bg-indigo-200 rounded-full blur-3xl opacity-30 animate-pulse"></div>
-                                <img 
-                                    src="https://placehold.co/600x600/transparent/png?text=🐶🐱" 
-                                    alt="Pets" 
-                                    className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
-                                />
+                                <img
+                                src="/кошкасобака.png"
+                                  alt="Pets"
+                                  className="relative z-10 w-full h-full w-full h-full object-contain drop-shadow-lg animate-bounce"
+                             />
+
                             </div>
                         </div>
                     </div>
@@ -205,7 +206,7 @@ const HomePage = () => {
                         </div>
                         {/* Декоративная картинка подарка */}
                         <div className="w-48 md:w-64">
-                             <img src="https://placehold.co/300x300/transparent/png?text=🎁" alt="Gift" className="w-full h-full object-contain drop-shadow-lg animate-bounce" />
+                            
                         </div>
                     </div>
                 </div>
