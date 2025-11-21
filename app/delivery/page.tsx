@@ -21,51 +21,102 @@ const DeliveryPaymentPage = () => {
     
     const renderStepContent = () => {
         switch (step) {
-            case 1:
-                return (
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                            <MapPin className="w-6 h-6 mr-3 text-indigo-600" />
-                            Шаг 1: Адрес доставки
-                        </h2>
-                        <div className="bg-gray-100 p-6 rounded-lg text-gray-600">
-                            Здесь будут поля для ввода адреса, улицы и телефона.
-                        </div>
-                        <button onClick={handleNextStep} className="w-full flex justify-center py-3 px-4 rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
-                            Перейти к оплате
-                        </button>
+        case 1:
+            return (
+                <div className="space-y-6">
+                    <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                        <MapPin className="w-6 h-6 mr-3 text-indigo-600" />
+                        Шаг 1: Адрес доставки
+                    </h2>
+
+                    <div className="space-y-4">
+                        <input
+                            type="text"
+                            placeholder="Город"
+                            className="w-full p-3 border rounded-lg"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Улица, дом"
+                            className="w-full p-3 border rounded-lg"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Квартира / подъезд"
+                            className="w-full p-3 border rounded-lg"
+                        />
+                        <input
+                            type="tel"
+                            placeholder="Телефон"
+                            className="w-full p-3 border rounded-lg"
+                        />
                     </div>
-                );
-            case 2:
-                return (
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                            <CreditCard className="w-6 h-6 mr-3 text-indigo-600" />
-                            Шаг 2: Выбор способа оплаты
-                        </h2>
-                        <div className="bg-gray-100 p-6 rounded-lg text-gray-600">
-                            Здесь будут опции "Онлайн картой" или "Наличными".
-                        </div>
-                        <button onClick={handleNextStep} className="w-full flex justify-center py-3 px-4 rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
-                            Подтвердить заказ
-                        </button>
-                        <button type="button" onClick={handlePrevStep} className="w-full text-indigo-600 hover:text-indigo-500 font-medium py-2">
-                            Назад к адресу
-                        </button>
-                    </div>
-                );
-            case 3:
-                return (
-                    <div className="text-center p-8 bg-white rounded-xl shadow-2xl border border-green-100">
-                        <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-6" />
-                        <h2 className="text-3xl font-bold text-gray-800 mb-3">Спасибо за Ваш заказ!</h2>
-                        <p className="text-xl text-gray-600 mb-6">Ваш заказ принят и передан на сборку.</p>
-                        <a href="/" className="mt-8 w-full block py-3 px-4 border border-transparent rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
-                            Вернуться на главную
-                        </a>
-                    </div>
-                );
-            default:
+
+                    <button onClick={handleNextStep} className="w-full flex justify-center py-3 px-4 rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
+                        Перейти к оплате
+                    </button>
+                </div>
+            );
+               case 2:
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+        <CreditCard className="w-6 h-6 mr-3 text-indigo-600" />
+        Шаг 2: Оплата
+      </h2>
+
+      <p className="text-gray-600">Отсканируйте QR-код для оплаты</p>
+
+      <div className="flex justify-center">
+        <img
+          src="/qr-demo.png"
+          alt="QR код для оплаты"
+          className="w-48 h-48"
+        />
+      </div>
+
+      <div className="mt-4">
+        <p className="text-center text-sm text-gray-500 mb-2">
+          Небольшое видео пока происходит оплата 😄
+        </p>
+        <iframe
+          width="100%"
+          height="250"
+          src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          className="rounded-lg"
+        ></iframe>
+      </div>
+
+      <button
+        onClick={handleNextStep}
+        className="w-full flex justify-center py-3 px-4 rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150"
+      >
+        Я оплатил / Подтвердить
+      </button>
+
+      <button
+        type="button"
+        onClick={handlePrevStep}
+        className="w-full text-indigo-600 hover:text-indigo-500 font-medium py-2"
+      >
+        Назад к адресу
+      </button>
+    </div>
+  );
+        case 3:
+            return (
+                <div className="text-center p-8 bg-white rounded-xl shadow-2xl border border-green-100">
+                    <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-6" />
+                    <h2 className="text-3xl font-bold text-gray-800 mb-3">Спасибо за Ваш заказ!</h2>
+                    <p className="text-xl text-gray-600 mb-6">Ваш заказ принят и передан на сборку.</p>
+                    <a href="/" className="mt-8 w-full block py-3 px-4 border border-transparent rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
+                        Вернуться на главную
+                    </a>
+                </div>
+            );
+        default:
                 return null;
         }
     }
