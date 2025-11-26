@@ -51,6 +51,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
                <Link href="/profile" className="text-gray-600 hover:text-indigo-600 transition-colors">
                 Профиль
               </Link>
+              <Link href="/animals" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                Животные
+              </Link>
             </div>
             
             {/* Иконки (Корзина, Вход) */}
