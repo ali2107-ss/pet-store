@@ -185,7 +185,7 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* === АКЦИЯ (БАННЕР ВНИЗУ) === */}
+            {/* === АКЦИЯ (БАННЕР ВНИЗУ) */}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
                 <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-8 md:p-16 text-center md:text-left relative overflow-hidden shadow-2xl">
                     {/* Декор фона */}
