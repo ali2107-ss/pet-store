@@ -72,7 +72,9 @@ const CartPage = () => {
                     >
                       <Minus className="w-4 h-4" />
                     </button>
+
                     <span className="px-3 text-lg font-medium text-gray-800">{item.quantity}</span>
+
                     <button
                       type="button"
                       title="Увеличить количество"
