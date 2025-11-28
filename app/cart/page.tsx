@@ -64,11 +64,21 @@ const CartPage = () => {
 
                 <div className="flex items-center space-x-4 ml-4">
                   <div className="flex items-center border border-gray-300 rounded-lg">
-                    <button onClick={() => decrement(item.id)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-l-lg">
+                    <button
+                      type="button"
+                      title="Уменьшить количество"
+                      onClick={() => decrement(item.id)}
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-l-lg"
+                    >
                       <Minus className="w-4 h-4" />
                     </button>
                     <span className="px-3 text-lg font-medium text-gray-800">{item.quantity}</span>
-                    <button onClick={() => increment(item.id)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-r-lg">
+                    <button
+                      type="button"
+                      title="Увеличить количество"
+                      onClick={() => increment(item.id)}
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-r-lg"
+                    >
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
@@ -77,7 +87,12 @@ const CartPage = () => {
                     {(item.price * item.quantity).toLocaleString()} ₸
                   </p>
 
-                  <button onClick={() => removeItem(item.id)} className="p-3 text-red-500 hover:bg-red-100 rounded-full transition duration-150">
+                  <button
+                    type="button"
+                    title="Удалить товар"
+                    onClick={() => removeItem(item.id)}
+                    className="p-3 text-red-500 hover:bg-red-100 rounded-full transition duration-150"
+                  >
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
