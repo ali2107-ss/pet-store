@@ -13,7 +13,17 @@ const initialCartItems = [
 const CartPage = () => {
   const [cartItems, setCartItems] = useState(initialCartItems);
 
-  // Удаление товара (оставляем рабочим)
+  // Увеличение количества
+  const increment = (id: number) => {
+    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
+  };
+
+  // Уменьшение количества
+  const decrement = (id: number) => {
+    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(item.quantity - 1, 1) } : item));
+  };
+
+  // Удаление товара
   const removeItem = (id: number) => {
     setCartItems(prev => prev.filter(item => item.id !== id));
   };
@@ -54,27 +64,22 @@ const CartPage = () => {
 
                 <div className="flex items-center space-x-4 ml-4">
                   <div className="flex items-center border border-gray-300 rounded-lg">
-
-                    {/* ОТКЛЮЧЕННАЯ КНОПКА "—" */}
                     <button
                       type="button"
                       title="Уменьшить количество"
-                      onClick={() => {}}
-                      className="p-2 text-gray-400 bg-gray-100 cursor-not-allowed rounded-l-lg"
-                      disabled
+                      onClick={() => decrement(item.id)}
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-l-lg"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
 
                     <span className="px-3 text-lg font-medium text-gray-800">{item.quantity}</span>
 
-                    {/* ОТКЛЮЧЕННАЯ КНОПКА "+" */}
                     <button
                       type="button"
                       title="Увеличить количество"
-                      onClick={() => {}}
-                      className="p-2 text-gray-400 bg-gray-100 cursor-not-allowed rounded-r-lg"
-                      disabled
+                      onClick={() => increment(item.id)}
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-r-lg"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
