@@ -123,7 +123,7 @@ const CartPage = () => {
               </div>
 
               <a 
-                href="/cart/checkout"
+                href="delivery"
                 className="mt-6 w-full flex items-center justify-center bg-indigo-600 text-white p-4 rounded-lg text-xl font-semibold hover:bg-indigo-700 transition duration-150 shadow-indigo-500/50 shadow-lg"
               >
                 <ShoppingBag className="w-6 h-6 mr-2" />
