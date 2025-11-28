@@ -24,38 +24,42 @@ const DeliveryPaymentPage = () => {
         case 1:
             return (
                 <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                        <MapPin className="w-6 h-6 mr-3 text-indigo-600" />
-                        Шаг 1: Адрес доставки
-                    </h2>
+  <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+    <MapPin className="w-6 h-6 mr-3 text-indigo-600" />
+    Шаг 1: Адрес доставки
+  </h2>
 
-                    <div className="space-y-4">
-                        <input
-                            type="text"
-                            placeholder="Город"
-                            className="w-full p-3 border rounded-lg"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Улица, дом"
-                            className="w-full p-3 border rounded-lg"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Квартира / подъезд"
-                            className="w-full p-3 border rounded-lg"
-                        />
-                        <input
-                            type="tel"
-                            placeholder="Телефон"
-                            className="w-full p-3 border rounded-lg"
-                        />
-                    </div>
+  <div className="space-y-4">
+    <input
+      type="text"
+      placeholder="Город"
+      className="w-full p-3 border rounded-lg bg-white text-black placeholder-gray-400"
+    />
+    <input
+      type="text"
+      placeholder="Улица, дом"
+      className="w-full p-3 border rounded-lg bg-white text-black placeholder-gray-400"
+    />
+    <input
+      type="text"
+      placeholder="Квартира / подъезд"
+      className="w-full p-3 border rounded-lg bg-white text-black placeholder-gray-400"
+    />
+    <input
+      type="tel"
+      placeholder="Телефон"
+      className="w-full p-3 border rounded-lg bg-white text-black placeholder-gray-400"
+    />
+  </div>
 
-                    <button onClick={handleNextStep} className="w-full flex justify-center py-3 px-4 rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
-                        Перейти к оплате
-                    </button>
-                </div>
+  <button
+    onClick={handleNextStep}
+    className="w-full flex justify-center py-3 px-4 rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150"
+  >
+    Перейти к оплате
+  </button>
+</div>
+
             );
                case 2:
   return (
