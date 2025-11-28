@@ -74,10 +74,10 @@ const HomePage = () => {
     ];
     
     const featuredProducts = [
-        { id: 1, name: 'Сухой корм ProCat (2кг)', category: 'Еда', price: 4200, image: 'https://placehold.co/400x400/e0e7ff/4338ca?text=Корм' },
-        { id: 2, name: 'Лежанка Royal Soft', category: 'Уют', price: 12500, image: 'https://placehold.co/400x400/ffedd5/c2410c?text=Лежанка' },
-        { id: 3, name: 'Интерактивная мышь', category: 'Игрушки', price: 3350, image: 'https://placehold.co/400x400/fce7f3/be185d?text=Игрушка' },
-        { id: 4, name: 'Шампунь для шерсти', category: 'Уход', price: 2400, image: 'https://placehold.co/400x400/fae8ff/86198f?text=Шампунь' },
+        { id: 1, name: 'Сухой корм ProCat (2кг)', category: 'Еда', price: 4200, image: 'https://basket-12.wbbasket.ru/vol1825/part182549/182549714/images/big/1.webp' },
+        { id: 2, name: 'Лежанка Royal Soft', category: 'Уют', price: 12500, image: 'https://avatars.mds.yandex.net/get-mpic/5216590/2a000001958c2a78096b691c1f2b56b92b7c/orig' },
+        { id: 3, name: 'Интерактивная мышь', category: 'Игрушки', price: 3350, image: 'https://avatars.mds.yandex.net/i?id=daaede52da5e3bbf1c711d7ab18e7664652d8bc3-4440117-images-thumbs&n=13' },
+        { id: 4, name: 'Шампунь для шерсти', category: 'Уход', price: 2400, image: 'https://avatars.mds.yandex.net/i?id=c9e307f8ebc5ff71dd9b59f53649d877_l-10036219-images-thumbs&n=13' },
     ];
 
     const features = [
