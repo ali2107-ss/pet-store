@@ -1,123 +1,26 @@
-#include <iostream>
-#include <iomanip>
-#include <memory>
-using namespace std;
+export default function LocationPage() {
+    return (
+        <section className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold mb-4">Контакты</h1>
+            <p className="mb-2">Здесь вы можете найти наш адрес, часы работы и способы связи.</p>
 
-// Глобальная переменная (статическая память)
-int globalCounter = 0;
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div className="bg-white p-6 rounded shadow">
+                    <h2 className="text-xl font-semibold mb-2">Адрес</h2>
+                    <p>г. Москва, ул. Примерная, 12</p>
+                    <p className="mt-2">Телефон: +7 (495) 123-45-67</p>
+                    <p>Email: info@petpalace.example</p>
+                </div>
 
-// Функция для работы со стеком
-void stackExample() {
-    cout << "\n--- STACK EXAMPLE ---\n";
-
-    int a = 5;
-    int b = 10;
-
-    cout << "a = " << a << " | address: " << &a << endl;
-    cout << "b = " << b << " | address: " << &b << endl;
-}
-
-// Функция для динамической памяти (heap)
-int* createDynamicNumber(int value) {
-    int* ptr = new int(value);
-    return ptr;
-}
-
-// Работа с динамическим массивом
-void dynamicArrayExample() {
-    cout << "\n--- DYNAMIC ARRAY EXAMPLE ---\n";
-
-    int size;
-    cout << "Enter array size: ";
-    cin >> size;
-
-    int* arr = new int[size];
-
-    for(int i = 0; i < size; i++) {
-        arr[i] = (i + 1) * 10;
-    }
-
-    cout << "Array values:\n";
-    for(int i = 0; i < size; i++) {
-        cout << "arr[" << i << "] = " << arr[i]
-             << " | address: " << &arr[i] << endl;
-    }
-
-    delete[] arr;
-}
-
-// Использование умного указателя
-void smartPointerExample() {
-    cout << "\n--- SMART POINTER EXAMPLE ---\n";
-
-    unique_ptr<int> smartPtr = make_unique<int>(99);
-    cout << "Smart pointer value: " << *smartPtr << endl;
-}
-
-// Структура для демонстрации
-struct Student {
-    string name;
-    int age;
-    float grade;
-};
-
-void structExample() {
-    cout << "\n--- STRUCT EXAMPLE ---\n";
-
-    Student* s = new Student;
-    s->name = "Alex";
-    s->age = 20;
-    s->grade = 4.5;
-
-    cout << "Name: " << s->name << endl;
-    cout << "Age: " << s->age << endl;
-    cout << "Grade: " << s->grade << endl;
-
-    delete s;
-}
-
-int main() {
-    cout << "===== MEMORY DISTRIBUTION DEMO =====\n";
-
-    // Стековые переменные
-    int stackVar = 10;
-    float stackFloat = 3.14f;
-
-    // Динамическая память
-    int* heapVar = new int(50);
-
-    cout << "\n--- BASIC VARIABLES ---\n";
-    cout << "Global counter: " << globalCounter 
-         << " | address: " << &globalCounter << endl;
-
-    cout << "Stack int: " << stackVar 
-         << " | address: " << &stackVar << endl;
-
-    cout << "Stack float: " << stackFloat 
-         << " | address: " << &stackFloat << endl;
-
-    cout << "Heap int: " << *heapVar 
-         << " | address: " << heapVar << endl;
-
-    // Увеличиваем глобальную переменную
-    globalCounter += 5;
-    cout << "Updated globalCounter: " << globalCounter << endl;
-
-    // Вызовы функций
-    stackExample();
-
-    int* dynamicNum = createDynamicNumber(123);
-    cout << "\nDynamic number: " << *dynamicNum 
-         << " | address: " << dynamicNum << endl;
-
-    dynamicArrayExample();
-    smartPointerExample();
-    structExample();
-
-    // Освобождение памяти
-    delete heapVar;
-    delete dynamicNum;
-
-    cout << "\n===== PROGRAM FINISHED SUCCESSFULLY =====\n";
-    return 0;
+                <div className="bg-white p-6 rounded shadow">
+                    <h2 className="text-xl font-semibold mb-2">Часы работы</h2>
+                    <ul className="list-disc list-inside">
+                        <li>Пн–Пт: 10:00 — 20:00</li>
+                        <li>Сб–Вс: 10:00 — 18:00</li>
+                    </ul>
+                    <div className="mt-4 text-sm text-gray-500">(Здесь можно встроить карту или iframe)</div>
+                </div>
+            </div>
+        </section>
+    );
 }

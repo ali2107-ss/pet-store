@@ -6,6 +6,8 @@ import { Inter } from "next/font/google";
 import Link from "next/link";
 // В TypeScript нужно правильно указать путь до CSS.
 import "./globals.css"; 
+// Контекст корзины (провайдер клиента)
+import { CartProvider } from "../context/CartContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -75,7 +77,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
         {/* === ОСНОВНОЕ СОДЕРЖИМОЕ === */}
         <main className="container mx-auto px-4 py-8 min-h-[calc(100vh-250px)]">
-          {children}
+          <CartProvider>
+            {children}
+          </CartProvider>
         </main>
 
         {/* === ПОДВАЛ (FOOTER) === */}
