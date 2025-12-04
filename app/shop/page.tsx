@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Heart, Search } from 'lucide-react';
 
 // Моковые данные о товарах
@@ -14,18 +14,17 @@ interface Product {
 }
 
 const products: Product[] = [
-  { id: 1, name: 'Сухой корм для собак', price: 6500, category: 'Еда', image: 'https://avatars.mds.yandex.net/get-mpic/1853752/2a0000018b1749316f0ff8f46c168db2c78a/orig', rating: 4.5 },
-  { id: 2, name: 'Мягкая игрушка', price: 1800, category: 'Игрушки', image: 'https://avatars.mds.yandex.net/i?id=f47ee48fd958c75fff65b2825ac5540bc84ec34b-5227767-images-thumbs&n=13', rating: 4.0 },
-  { id: 3, name: 'Когтеточка', price: 8900, category: 'Аксессуары', image: 'https://avatars.mds.yandex.net/get-mpic/5297750/2a0000019545ce79c0c1fe257ceaa5993750/orig', rating: 4.3 },
-  { id: 4, name: 'Шампунь для кошек', price: 2400, category: 'Здоровье', image: 'https://avatars.mds.yandex.net/get-mpic/14026497/2a00000195a608e925b2976d7005dd0f1216/9hq', rating: 4.1 },
-  // Дополнительные товары (цены примерные в тенге)
-  { id: 5, name: 'Большой лоток для кошек', price: 4500, category: 'Аксессуары', image: 'https://ir.ozone.ru/s3/multimedia-q/6891272558.jpg', rating: 4.2 },
-  { id: 6, name: 'Наполнитель (5 кг)', price: 2100, category: 'Гигиена', image: 'https://cdn1.ozone.ru/s3/multimedia-h/c600/6333120401.jpg', rating: 4.6 },
-  { id: 7, name: 'Ошейник со светлячком', price: 3200, category: 'Аксессуары', image: 'https://avatars.mds.yandex.net/i?id=526d54771b077aa45db04c4d2bc52cbe_l-5275490-images-thumbs&n=13', rating: 4.1 },
-  { id: 8, name: 'Влажный корм для котов', price: 450, category: 'Еда', image: 'https://avatars.mds.yandex.net/i?id=2e8dd6872ddba35af48fde5d9639f16aa075a83f-4578697-images-thumbs&n=13', rating: 4.9 },
+  { id: 1, name: 'Сухой корм для собак', price: 1200, category: 'Еда', image: 'https://placehold.co/400x300/FFD166/000000?text=Корм', rating: 4.5 },
+  { id: 2, name: 'Мягкая игрушка', price: 350, category: 'Игрушки', image: 'https://placehold.co/400x300/06D6A0/000000?text=Игрушка', rating: 4.0 },
+  { id: 3, name: 'Когтеточка', price: 1290, category: 'Аксессуары', image: 'https://placehold.co/400x300/EF476F/FFFFFF?text=Когтеточка', rating: 4.3 },
+  { id: 4, name: 'Шампунь для кошек', price: 450, category: 'Здоровье', image: 'https://placehold.co/400x300/118AB2/FFFFFF?text=Шампунь', rating: 4.1 },
 ];
 
-const ProductCard = ({ product }: { product: Product }) => (
+interface CartItem extends Product {
+  quantity: number;
+}
+
+const ProductCard = ({ product, onAddToCart }: { product: Product, onAddToCart: (product: Product) => void }) => (
   <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col">
     <div className="relative h-48 overflow-hidden">
       <img
@@ -41,11 +40,11 @@ const ProductCard = ({ product }: { product: Product }) => (
       <span className="text-xs font-semibold text-indigo-600 mb-1">{product.category}</span>
       <h3 className="text-lg font-bold text-gray-900 mb-2 flex-grow">{product.name}</h3>
       <div className="flex items-center justify-between mt-auto pt-2">
-        {/* ИЗМЕНЕНИЕ ЗДЕСЬ: Добавлено форматирование и знак тенге */}
-        <p className="text-xl font-extrabold text-indigo-700">
-            {product.price.toLocaleString()} ₸
-        </p>
-        <button className="flex items-center bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition duration-150 shadow-md">
+        <p className="text-xl font-extrabold text-indigo-700">{product.price} ₽</p>
+        <button 
+          className="flex items-center bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition duration-150 shadow-md" 
+          onClick={() => onAddToCart(product)}
+        >
           <ShoppingCart className="w-4 h-4 mr-1" />
           В корзину
         </button>
@@ -55,6 +54,30 @@ const ProductCard = ({ product }: { product: Product }) => (
 );
 
 const ShopPage = () => {
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cart");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  // Сохраняем корзину в localStorage при каждом изменении
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  const handleAddToCart = (product: Product) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+      } else {
+        return [...prev, { ...product, quantity: 1 }];
+      }
+    });
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -87,8 +110,13 @@ const ShopPage = () => {
         {/* Сетка товаров */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {products.map(product => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
           ))}
+          {/* Дополнительные карточки */}
+          <ProductCard key={5} product={{ id: 5, name: 'Большой лоток для кошек', price: 950, category: 'Аксессуары', image: 'https://placehold.co/400x300/06B6D4/FFFFFF?text=Лоток', rating: 4.2 }} onAddToCart={handleAddToCart} />
+          <ProductCard key={6} product={{ id: 6, name: 'Наполнитель (5 кг)', price: 400, category: 'Гигиена', image: 'https://placehold.co/400x300/EC4899/FFFFFF?text=Наполнитель', rating: 4.6 }} onAddToCart={handleAddToCart} />
+          <ProductCard key={7} product={{ id: 7, name: 'Ошейник со светлячком', price: 590, category: 'Аксессуары', image: 'https://placehold.co/400x300/8B5CF6/FFFFFF?text=Ошейник', rating: 4.1 }} onAddToCart={handleAddToCart} />
+          <ProductCard key={8} product={{ id: 8, name: 'Влажный корм для взрослых котов', price: 1500, category: 'Еда', image: 'https://placehold.co/400x300/3B82F6/FFFFFF?text=Влажный+корм', rating: 4.9 }} onAddToCart={handleAddToCart} />
         </div>
       </div>
     </div>

@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 
-// Начальные товары в корзине
 const initialCartItems = [
   { id: 1, name: 'Сухой корм для кошек (2 кг)', price: 1500, quantity: 1, image: 'https://placehold.co/100x100/A0B2C0/ffffff?text=Корм' },
   { id: 2, name: 'Игрушка "Мышка"', price: 200, quantity: 3, image: 'https://placehold.co/100x100/C0A0B2/ffffff?text=Мышка' },
@@ -11,19 +10,28 @@ const initialCartItems = [
 ];
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  // Загружаем данные из localStorage или используем initialCartItems
+  const [cartItems, setCartItems] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cart");
+      return saved ? JSON.parse(saved) : initialCartItems;
+    }
+    return initialCartItems;
+  });
 
-  // Увеличение количества
+  // Сохраняем cartItems в localStorage при каждом изменении
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
+
   const increment = (id: number) => {
     setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
   };
 
-  // Уменьшение количества
   const decrement = (id: number) => {
     setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(item.quantity - 1, 1) } : item));
   };
 
-  // Удаление товара
   const removeItem = (id: number) => {
     setCartItems(prev => prev.filter(item => item.id !== id));
   };
