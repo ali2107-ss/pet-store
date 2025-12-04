@@ -1,4 +1,6 @@
-import React from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Heart, Search } from 'lucide-react';
 
 // Моковые данные о товарах
@@ -18,7 +20,11 @@ const products: Product[] = [
   { id: 4, name: 'Шампунь для кошек', price: 450, category: 'Здоровье', image: 'https://placehold.co/400x300/118AB2/FFFFFF?text=Шампунь', rating: 4.1 },
 ];
 
-const ProductCard = ({ product }: { product: Product }) => (
+interface CartItem extends Product {
+  quantity: number;
+}
+
+const ProductCard = ({ product, onAddToCart }: { product: Product, onAddToCart: (product: Product) => void }) => (
   <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col">
     <div className="relative h-48 overflow-hidden">
       <img
@@ -35,7 +41,10 @@ const ProductCard = ({ product }: { product: Product }) => (
       <h3 className="text-lg font-bold text-gray-900 mb-2 flex-grow">{product.name}</h3>
       <div className="flex items-center justify-between mt-auto pt-2">
         <p className="text-xl font-extrabold text-indigo-700">{product.price} ₽</p>
-        <button className="flex items-center bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition duration-150 shadow-md">
+        <button 
+          className="flex items-center bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition duration-150 shadow-md" 
+          onClick={() => onAddToCart(product)}
+        >
           <ShoppingCart className="w-4 h-4 mr-1" />
           В корзину
         </button>
@@ -45,6 +54,30 @@ const ProductCard = ({ product }: { product: Product }) => (
 );
 
 const ShopPage = () => {
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cart");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  // Сохраняем корзину в localStorage при каждом изменении
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  const handleAddToCart = (product: Product) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+      } else {
+        return [...prev, { ...product, quantity: 1 }];
+      }
+    });
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -77,13 +110,13 @@ const ShopPage = () => {
         {/* Сетка товаров */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {products.map(product => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
           ))}
-          {/* Добавим еще несколько карточек, чтобы заполнить макет */}
-          <ProductCard key={5} product={{ id: 5, name: 'Большой лоток для кошек', price: 950, category: 'Аксессуары', image: 'https://placehold.co/400x300/06B6D4/FFFFFF?text=Лоток', rating: 4.2 }} />
-          <ProductCard key={6} product={{ id: 6, name: 'Наполнитель (5 кг)', price: 400, category: 'Гигиена', image: 'https://placehold.co/400x300/EC4899/FFFFFF?text=Наполнитель', rating: 4.6 }} />
-          <ProductCard key={7} product={{ id: 7, name: 'Ошейник со светлячком', price: 590, category: 'Аксессуары', image: 'https://placehold.co/400x300/8B5CF6/FFFFFF?text=Ошейник', rating: 4.1 }} />
-          <ProductCard key={8} product={{ id: 8, name: 'Влажный корм для взрослых котов', price: 1500, category: 'Еда', image: 'https://placehold.co/400x300/3B82F6/FFFFFF?text=Влажный+корм', rating: 4.9 }} />
+          {/* Дополнительные карточки */}
+          <ProductCard key={5} product={{ id: 5, name: 'Большой лоток для кошек', price: 950, category: 'Аксессуары', image: 'https://placehold.co/400x300/06B6D4/FFFFFF?text=Лоток', rating: 4.2 }} onAddToCart={handleAddToCart} />
+          <ProductCard key={6} product={{ id: 6, name: 'Наполнитель (5 кг)', price: 400, category: 'Гигиена', image: 'https://placehold.co/400x300/EC4899/FFFFFF?text=Наполнитель', rating: 4.6 }} onAddToCart={handleAddToCart} />
+          <ProductCard key={7} product={{ id: 7, name: 'Ошейник со светлячком', price: 590, category: 'Аксессуары', image: 'https://placehold.co/400x300/8B5CF6/FFFFFF?text=Ошейник', rating: 4.1 }} onAddToCart={handleAddToCart} />
+          <ProductCard key={8} product={{ id: 8, name: 'Влажный корм для взрослых котов', price: 1500, category: 'Еда', image: 'https://placehold.co/400x300/3B82F6/FFFFFF?text=Влажный+корм', rating: 4.9 }} onAddToCart={handleAddToCart} />
         </div>
       </div>
     </div>
