@@ -134,9 +134,11 @@ const AnimalsPage = () => {
                                 <p className="text-lg text-gray-600 mb-6">
                                     Мы сотрудничаем с лучшими питомниками и фермами. Оставьте заявку, и мы поможем найти конкретную породу или вид животного.
                                 </p>
-                                <button className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
-                                    Оставить заявку на поиск
-                                </button>
+                                <a href="/application">
+                                    <button className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
+                                        Оставить заявку на поиск
+                                    </button>
+                                </a>
                             </div>
                             <div className="w-full md:w-1/3 bg-indigo-50 rounded-2xl p-6 text-center">
                                 <p className="text-indigo-900 font-bold text-lg mb-2">Горячая линия</p>
