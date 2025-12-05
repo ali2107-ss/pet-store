@@ -18,7 +18,6 @@ const initialCartItems: CartItem[] = [
 ];
 
 const CartPage = () => {
-
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("cart");
@@ -27,30 +26,32 @@ const CartPage = () => {
     return initialCartItems;
   });
 
+  const [removingId, setRemovingId] = useState<number | null>(null);
+
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
   const increment = (id: number) => {
     setCartItems(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
+      prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item)
     );
   };
 
   const decrement = (id: number) => {
     setCartItems(prev =>
       prev
-        .map(item =>
-          item.id === id ? { ...item, quantity: item.quantity - 1 } : item
-        )
+        .map(item => item.id === id ? { ...item, quantity: item.quantity - 1 } : item)
         .filter(item => item.quantity > 0)
     );
   };
 
   const removeItem = (id: number) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+    setRemovingId(id);
+    setTimeout(() => {
+      setCartItems(prev => prev.filter(item => item.id !== id));
+      setRemovingId(null);
+    }, 500);
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -78,7 +79,15 @@ const CartPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             {cartItems.map(item => (
-              <div key={item.id} className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition duration-150 border border-gray-100">
+              <div
+                key={item.id}
+                style={{
+                  opacity: removingId === item.id ? 0 : 1,
+                  transform: removingId === item.id ? 'scale(0.9)' : 'scale(1)',
+                  transition: 'all 0.5s ease',
+                }}
+                className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100"
+              >
                 <div className="flex items-center space-x-4 flex-1 min-w-0">
                   <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg flex-shrink-0" />
                   <div className="min-w-0">
@@ -89,21 +98,13 @@ const CartPage = () => {
 
                 <div className="flex items-center space-x-4 ml-4">
                   <div className="flex items-center border border-gray-300 rounded-lg">
-                    <button
-                      type="button"
-                      onClick={() => decrement(item.id)}
-                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-l-lg"
-                    >
+                    <button onClick={() => decrement(item.id)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-l-lg">
                       <Minus className="w-4 h-4" />
                     </button>
 
                     <span className="px-3 text-lg font-medium text-gray-800">{item.quantity}</span>
 
-                    <button
-                      type="button"
-                      onClick={() => increment(item.id)}
-                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-r-lg"
-                    >
+                    <button onClick={() => increment(item.id)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-r-lg">
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
@@ -112,11 +113,7 @@ const CartPage = () => {
                     {(item.price * item.quantity).toLocaleString()} ₸
                   </p>
 
-                  <button
-                    type="button"
-                    onClick={() => removeItem(item.id)}
-                    className="p-3 text-red-500 hover:bg-red-100 rounded-full transition duration-150"
-                  >
+                  <button onClick={() => removeItem(item.id)} className="p-3 text-red-500 hover:bg-red-100 rounded-full transition duration-150">
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
