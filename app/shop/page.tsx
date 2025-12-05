@@ -12,6 +12,7 @@ interface Product {
   rating: number;
 }
 
+<<<<<<< HEAD
 const products: Product[] = [
   { id: 1, name: 'Сухой корм для собак', price: 6000, category: 'Еда', image: 'korm.jpg', rating: 4.5 },
   { id: 2, name: 'Мягкая игрушка "Мышка"', price: 1750, category: 'Игрушки', image: 'igrushka.jpg', rating: 4.0 },
@@ -21,6 +22,27 @@ const products: Product[] = [
   { id: 6, name: 'Наполнитель (5 кг)', price: 2000, category: 'Гигиена', image: 'napolnitel.jpg', rating: 4.6 },
   { id: 7, name: 'Ошейник со светлячком', price: 2950, category: 'Аксессуары', image: 'osheinik.jpg', rating: 4.1 },
   { id: 8, name: 'Влажный корм для взрослых котов', price: 7500, category: 'Еда', image: 'vlazhniykorm.jpg', rating: 4.9 },
+=======
+// Моковые данные о товарах. Цены пересчитаны в тенге (₸) с увеличением (примерно x5)
+const products: Product[] = [
+  // ПРИМЕЧАНИЕ: ЦЕНЫ СКОРРЕКТИРОВАНЫ ДЛЯ БОЛЕЕ РЕАЛИСТИЧНОГО ОТОБРАЖЕНИЯ В ТЕНГЕ (₸)
+  { id: 1, name: 'Сухой корм для собак', price: 6000, category: 'Еда', // Было 1200
+    image: 'korm.jpg', rating: 4.5 },
+  { id: 2, name: 'Мягкая игрушка "Мышка"', price: 1750, category: 'Игрушки', // Было 350
+    image: 'igrushka.jpg', rating: 4.0 },
+  { id: 3, name: 'Когтеточка "Башня"', price: 6450, category: 'Аксессуары', // Было 1290
+    image: 'kogtetochka.jpg', rating: 4.3 },
+  { id: 4, name: 'Шампунь для кошек', price: 2250, category: 'Здоровье', // Было 450
+    image: 'shampun.jpg', rating: 4.1 },
+  { id: 5, name: 'Большой лоток для кошек', price: 4750, category: 'Гигиена', // Было 950
+    image: 'lotok.jpg', rating: 4.2 },
+  { id: 6, name: 'Наполнитель (5 кг)', price: 2000, category: 'Гигиена', // Было 400
+    image: 'napolnitel.jpg', rating: 4.6 },
+  { id: 7, name: 'Ошейник со светлячком', price: 2950, category: 'Аксессуары', // Было 590
+    image: 'osheinik.jpg', rating: 4.1 },
+  { id: 8, name: 'Влажный корм для взрослых котов', price: 7500, category: 'Еда', // Было 1500
+    image: 'vlazhniykorm.jpg', rating: 4.9 },
+>>>>>>> 5e9b345796167eb76c53655827b6a492d9ac974a
 ];
 
 interface CartItem extends Product {
@@ -46,10 +68,19 @@ const ProductCard = ({ product, onAddToCart, triggerAnimation }: { product: Prod
   <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col">
     <div className="relative h-48 overflow-hidden">
       <img
+        // Внимание: если вы не загрузите эти файлы в проект, будет показан плейсхолдер
         src={product.image}
         alt={product.name}
         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+<<<<<<< HEAD
         onError={(e: any) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://placehold.co/400x300/E5E7EB/4B5563?text=Нет+Фото"; }}
+=======
+        // Добавляем обработку ошибки загрузки изображения.
+        onError={(e: any) => { 
+            e.currentTarget.onerror = null; 
+            e.currentTarget.src = "https://placehold.co/400x300/E5E7EB/4B5563?text=Нет+Фото"; 
+        }}
+>>>>>>> 5e9b345796167eb76c53655827b6a492d9ac974a
       />
       <button title="Добавить в избранное" className="absolute top-3 right-3 p-2 bg-white rounded-full text-red-500 shadow-md hover:bg-red-50 hover:text-red-600 transition transform hover:scale-110">
         <Heart className="w-5 h-5" fill="currentColor" />
@@ -63,6 +94,10 @@ const ProductCard = ({ product, onAddToCart, triggerAnimation }: { product: Prod
         <span className="text-xs text-gray-500 ml-2">({product.rating.toFixed(1)})</span>
       </div>
       <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
+<<<<<<< HEAD
+=======
+        {/* Цена в тенге (₸) */}
+>>>>>>> 5e9b345796167eb76c53655827b6a492d9ac974a
         <p className="text-2xl font-extrabold text-indigo-700">{product.price} ₸</p> 
         <button 
           className="flex items-center bg-green-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-green-700 transition duration-150 shadow-lg shadow-green-300/50 transform hover:translate-y-[-1px]" 
@@ -78,6 +113,77 @@ const ProductCard = ({ product, onAddToCart, triggerAnimation }: { product: Prod
 
 // --- Главный компонент магазина ---
 
+<<<<<<< HEAD
+=======
+const CartModal = ({ cart, onClose }: { cart: CartItem[], onClose: () => void }) => {
+    const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6">
+                <div className="flex justify-between items-center border-b pb-3 mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                        <ShoppingCart className="w-6 h-6 mr-2 text-indigo-600" /> 
+                        Ваша Корзина ({totalItems})
+                    </h2>
+                    <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 transition">
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+                
+                {cart.length === 0 ? (
+                    <div className="text-center py-10">
+                        <p className="text-xl text-gray-500">Корзина пуста. Добавьте товары!</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="space-y-4">
+                            {cart.map(item => (
+                                <div key={item.id} className="flex items-center border-b pb-3 last:border-b-0">
+                                    <img 
+                                        src={item.image} 
+                                        alt={item.name} 
+                                        className="w-12 h-12 object-cover rounded-md mr-4"
+                                        onError={(e: any) => { 
+                                            e.currentTarget.onerror = null; 
+                                            e.currentTarget.src = "https://placehold.co/12x12/E5E7EB/4B5563?text=N/A"; 
+                                        }}
+                                    />
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-gray-900">{item.name}</p>
+                                        {/* Цена в тенге (₸) */}
+                                        <p className="text-sm text-gray-500">{item.quantity} x {item.price} ₸</p>
+                                    </div>
+                                    {/* Цена в тенге (₸) */}
+                                    <p className="font-bold text-lg text-indigo-700">{item.price * item.quantity} ₸</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-6 p-4 bg-indigo-50 rounded-lg shadow-inner">
+                            <div className="flex justify-between text-xl font-bold text-indigo-900">
+                                <span>ИТОГО:</span>
+                                {/* Цена в тенге (₸) */}
+                                <span>{totalAmount} ₸</span>
+                            </div>
+                        </div>
+
+                        <button 
+                            className="w-full mt-6 flex items-center justify-center bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition duration-150 shadow-lg"
+                        >
+                            <DollarSign className="w-5 h-5 mr-2"/> Оформить заказ
+                        </button>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};
+
+
+// --- ГЛАВНЫЙ КОМПОНЕНТ ---
+>>>>>>> 5e9b345796167eb76c53655827b6a492d9ac974a
 const ShopPage = () => {
   const [cart, setCart] = useState<CartItem[]>(() => {
     if (typeof window !== "undefined") {
@@ -87,25 +193,57 @@ const ShopPage = () => {
     return [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
+<<<<<<< HEAD
   const [selectedCategory, setSelectedCategory] = useState('Все категории');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Анимация корзины
   const [flyCart, setFlyCart] = useState(false);
+=======
+  
+  // 1. СОСТОЯНИЕ ФИЛЬТРОВ
+  const [selectedCategory, setSelectedCategory] = useState('Все категории');
+  const [searchTerm, setSearchTerm] = useState(''); // Для работы поля поиска
+>>>>>>> 5e9b345796167eb76c53655827b6a492d9ac974a
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
+<<<<<<< HEAD
+=======
+  // Получаем список уникальных категорий для выпадающего списка
+>>>>>>> 5e9b345796167eb76c53655827b6a492d9ac974a
   const categories = useMemo(() => {
     const uniqueCategories = new Set(products.map(p => p.category));
     return ['Все категории', ...Array.from(uniqueCategories)].sort();
   }, []);
 
+<<<<<<< HEAD
   const filteredProducts = useMemo(() => {
     let currentProducts = products;
     if (selectedCategory !== 'Все категории') currentProducts = currentProducts.filter(p => p.category === selectedCategory);
     if (searchTerm) currentProducts = currentProducts.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.category.toLowerCase().includes(searchTerm.toLowerCase()));
+=======
+  // 2. ЛОГИКА ФИЛЬТРАЦИИ
+  const filteredProducts = useMemo(() => {
+    let currentProducts = products;
+
+    // 1. Фильтр по категории
+    if (selectedCategory !== 'Все категории') {
+      currentProducts = currentProducts.filter(product => product.category === selectedCategory);
+    }
+
+    // 2. Фильтр по поисковому запросу
+    if (searchTerm) {
+      const lowerCaseSearch = searchTerm.toLowerCase();
+      currentProducts = currentProducts.filter(product => 
+        product.name.toLowerCase().includes(lowerCaseSearch) ||
+        product.category.toLowerCase().includes(lowerCaseSearch)
+      );
+    }
+
+>>>>>>> 5e9b345796167eb76c53655827b6a492d9ac974a
     return currentProducts;
   }, [selectedCategory, searchTerm]);
 
@@ -160,18 +298,53 @@ const ShopPage = () => {
                 <div className="mb-12 bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="relative flex-grow">
+<<<<<<< HEAD
                             <input type="text" placeholder="Поиск товаров..." className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                         </div>
                         <select aria-label="Фильтр по категориям" className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 md:w-1/4 transition shadow-sm" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
                             {categories.map(c => <option key={c} value={c}>{c}</option>)}
+=======
+                            <input
+                                type="text"
+                                placeholder="Поиск товаров..."
+                                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        </div>
+                        
+                        {/* Выпадающий список категорий, связанный с состоянием */}
+                        <select 
+                            aria-label="Фильтр по категориям" 
+                            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 md:w-1/4 transition shadow-sm"
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                        >
+                            {categories.map(category => (
+                                <option key={category} value={category}>{category}</option>
+                            ))}
+>>>>>>> 5e9b345796167eb76c53655827b6a492d9ac974a
                         </select>
                     </div>
+                    {filteredProducts.length === 0 && (
+                        <p className="mt-4 text-center text-lg text-red-500 font-medium">
+                            Товары по выбранным фильтрам не найдены.
+                        </p>
+                    )}
                 </div>
 
+<<<<<<< HEAD
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     {filteredProducts.map(product => (
                         <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} triggerAnimation={triggerAnimation} />
+=======
+                {/* Сетка товаров (используем отфильтрованный список) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {filteredProducts.map(product => (
+                        <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+>>>>>>> 5e9b345796167eb76c53655827b6a492d9ac974a
                     ))}
                 </div>
             </div>
