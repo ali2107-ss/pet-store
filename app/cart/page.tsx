@@ -3,15 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 
-const initialCartItems = [
+type CartItem = {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+};
+
+const initialCartItems: CartItem[] = [
   { id: 1, name: 'Сухой корм для кошек (2 кг)', price: 1500, quantity: 1, image: 'https://placehold.co/100x100/A0B2C0/ffffff?text=Корм' },
   { id: 2, name: 'Игрушка "Мышка"', price: 200, quantity: 3, image: 'https://placehold.co/100x100/C0A0B2/ffffff?text=Мышка' },
   { id: 3, name: 'Миска двойная', price: 1200, quantity: 1, image: 'https://placehold.co/100x100/B2C0A0/ffffff?text=Миска' },
 ];
 
 const CartPage = () => {
-  // Загружаем данные из localStorage или используем initialCartItems
-  const [cartItems, setCartItems] = useState(() => {
+
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("cart");
       return saved ? JSON.parse(saved) : initialCartItems;
@@ -19,17 +27,26 @@ const CartPage = () => {
     return initialCartItems;
   });
 
-  // Сохраняем cartItems в localStorage при каждом изменении
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
   const increment = (id: number) => {
-    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
+    setCartItems(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+      )
+    );
   };
 
   const decrement = (id: number) => {
-    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(item.quantity - 1, 1) } : item));
+    setCartItems(prev =>
+      prev
+        .map(item =>
+          item.id === id ? { ...item, quantity: item.quantity - 1 } : item
+        )
+        .filter(item => item.quantity > 0)
+    );
   };
 
   const removeItem = (id: number) => {
@@ -74,7 +91,6 @@ const CartPage = () => {
                   <div className="flex items-center border border-gray-300 rounded-lg">
                     <button
                       type="button"
-                      title="Уменьшить количество"
                       onClick={() => decrement(item.id)}
                       className="p-2 text-gray-600 hover:bg-gray-100 rounded-l-lg"
                     >
@@ -85,7 +101,6 @@ const CartPage = () => {
 
                     <button
                       type="button"
-                      title="Увеличить количество"
                       onClick={() => increment(item.id)}
                       className="p-2 text-gray-600 hover:bg-gray-100 rounded-r-lg"
                     >
@@ -99,7 +114,6 @@ const CartPage = () => {
 
                   <button
                     type="button"
-                    title="Удалить товар"
                     onClick={() => removeItem(item.id)}
                     className="p-3 text-red-500 hover:bg-red-100 rounded-full transition duration-150"
                   >
