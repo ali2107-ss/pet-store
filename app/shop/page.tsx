@@ -139,7 +139,7 @@ const ShopPage = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
                 <div className="flex items-center text-2xl font-bold text-indigo-700 tracking-tight cursor-pointer">
                     <Package className='w-7 h-7 mr-2 text-indigo-600'/>
-                  
+              
                 </div>
             </div>
         </header>
