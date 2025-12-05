@@ -14,25 +14,24 @@ interface Product {
   rating: number;
 }
 
-// Моковые данные о товарах с именами файлов, предоставленными пользователем.
-// ПРИМЕЧАНИЕ: В рабочем React-приложении эти файлы должны быть импортированы 
-// или размещены в папке 'public' для корректной загрузки.
+// Моковые данные о товарах. Цены пересчитаны в тенге (₸) с увеличением (примерно x5)
 const products: Product[] = [
-  { id: 1, name: 'Сухой корм для собак', price: 1200, category: 'Еда', 
+  // ПРИМЕЧАНИЕ: ЦЕНЫ СКОРРЕКТИРОВАНЫ ДЛЯ БОЛЕЕ РЕАЛИСТИЧНОГО ОТОБРАЖЕНИЯ В ТЕНГЕ (₸)
+  { id: 1, name: 'Сухой корм для собак', price: 6000, category: 'Еда', // Было 1200
     image: 'korm.jpg', rating: 4.5 },
-  { id: 2, name: 'Мягкая игрушка "Мышка"', price: 350, category: 'Игрушки', 
+  { id: 2, name: 'Мягкая игрушка "Мышка"', price: 1750, category: 'Игрушки', // Было 350
     image: 'igrushka.jpg', rating: 4.0 },
-  { id: 3, name: 'Когтеточка "Башня"', price: 1290, category: 'Аксессуары', 
+  { id: 3, name: 'Когтеточка "Башня"', price: 6450, category: 'Аксессуары', // Было 1290
     image: 'kogtetochka.jpg', rating: 4.3 },
-  { id: 4, name: 'Шампунь для кошек', price: 450, category: 'Здоровье', 
+  { id: 4, name: 'Шампунь для кошек', price: 2250, category: 'Здоровье', // Было 450
     image: 'shampun.jpg', rating: 4.1 },
-  { id: 5, name: 'Большой лоток для кошек', price: 950, category: 'Аксессуары', 
+  { id: 5, name: 'Большой лоток для кошек', price: 4750, category: 'Гигиена', // Было 950
     image: 'lotok.jpg', rating: 4.2 },
-  { id: 6, name: 'Наполнитель (5 кг)', price: 400, category: 'Гигиена', 
+  { id: 6, name: 'Наполнитель (5 кг)', price: 2000, category: 'Гигиена', // Было 400
     image: 'napolnitel.jpg', rating: 4.6 },
-  { id: 7, name: 'Ошейник со светлячком', price: 590, category: 'Аксессуары', 
+  { id: 7, name: 'Ошейник со светлячком', price: 2950, category: 'Аксессуары', // Было 590
     image: 'osheinik.jpg', rating: 4.1 },
-  { id: 8, name: 'Влажный корм для взрослых котов', price: 1500, category: 'Еда', 
+  { id: 8, name: 'Влажный корм для взрослых котов', price: 7500, category: 'Еда', // Было 1500
     image: 'vlazhniykorm.jpg', rating: 4.9 },
 ];
 
@@ -65,11 +64,11 @@ const ProductCard = ({ product, onAddToCart }: { product: Product, onAddToCart: 
   <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col">
     <div className="relative h-48 overflow-hidden">
       <img
+        // Внимание: если вы не загрузите эти файлы в проект, будет показан плейсхолдер
         src={product.image}
         alt={product.name}
         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         // Добавляем обработку ошибки загрузки изображения.
-        // Если изображение по имени файла не найдено, показываем плейсхолдер.
         onError={(e: any) => { 
             e.currentTarget.onerror = null; 
             e.currentTarget.src = "https://placehold.co/400x300/E5E7EB/4B5563?text=Нет+Фото"; 
@@ -87,7 +86,8 @@ const ProductCard = ({ product, onAddToCart }: { product: Product, onAddToCart: 
         <span className="text-xs text-gray-500 ml-2">({product.rating.toFixed(1)})</span>
       </div>
       <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
-        <p className="text-2xl font-extrabold text-indigo-700">{product.price} ₽</p>
+        {/* Цена в тенге (₸) */}
+        <p className="text-2xl font-extrabold text-indigo-700">{product.price} ₸</p> 
         <button 
           className="flex items-center bg-green-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-green-700 transition duration-150 shadow-lg shadow-green-300/50 transform hover:translate-y-[-1px]" 
           onClick={() => onAddToCart(product)}
@@ -154,9 +154,11 @@ const CartModal = ({ cart, onClose }: { cart: CartItem[], onClose: () => void })
                                     />
                                     <div className="flex-grow">
                                         <p className="font-semibold text-gray-900">{item.name}</p>
-                                        <p className="text-sm text-gray-500">{item.quantity} x {item.price} ₽</p>
+                                        {/* Цена в тенге (₸) */}
+                                        <p className="text-sm text-gray-500">{item.quantity} x {item.price} ₸</p>
                                     </div>
-                                    <p className="font-bold text-lg text-indigo-700">{item.price * item.quantity} ₽</p>
+                                    {/* Цена в тенге (₸) */}
+                                    <p className="font-bold text-lg text-indigo-700">{item.price * item.quantity} ₸</p>
                                 </div>
                             ))}
                         </div>
@@ -164,7 +166,8 @@ const CartModal = ({ cart, onClose }: { cart: CartItem[], onClose: () => void })
                         <div className="mt-6 p-4 bg-indigo-50 rounded-lg shadow-inner">
                             <div className="flex justify-between text-xl font-bold text-indigo-900">
                                 <span>ИТОГО:</span>
-                                <span>{totalAmount} ₽</span>
+                                {/* Цена в тенге (₸) */}
+                                <span>{totalAmount} ₸</span>
                             </div>
                         </div>
 
@@ -185,7 +188,6 @@ const CartModal = ({ cart, onClose }: { cart: CartItem[], onClose: () => void })
 const ShopPage = () => {
   // Инициализация состояния корзины из localStorage
   const [cart, setCart] = useState<CartItem[]>(() => {
-    // Проверка window нужна для Next.js (хотя "use client" это по сути гарантирует)
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("cart");
       try {
@@ -199,11 +201,42 @@ const ShopPage = () => {
   });
   
   const [isCartOpen, setIsCartOpen] = useState(false);
+  
+  // 1. СОСТОЯНИЕ ФИЛЬТРОВ
+  const [selectedCategory, setSelectedCategory] = useState('Все категории');
+  const [searchTerm, setSearchTerm] = useState(''); // Для работы поля поиска
 
   // Сохраняем корзину в localStorage при каждом изменении
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
+
+  // Получаем список уникальных категорий для выпадающего списка
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set(products.map(p => p.category));
+    return ['Все категории', ...Array.from(uniqueCategories)].sort();
+  }, []);
+
+  // 2. ЛОГИКА ФИЛЬТРАЦИИ
+  const filteredProducts = useMemo(() => {
+    let currentProducts = products;
+
+    // 1. Фильтр по категории
+    if (selectedCategory !== 'Все категории') {
+      currentProducts = currentProducts.filter(product => product.category === selectedCategory);
+    }
+
+    // 2. Фильтр по поисковому запросу
+    if (searchTerm) {
+      const lowerCaseSearch = searchTerm.toLowerCase();
+      currentProducts = currentProducts.filter(product => 
+        product.name.toLowerCase().includes(lowerCaseSearch) ||
+        product.category.toLowerCase().includes(lowerCaseSearch)
+      );
+    }
+
+    return currentProducts;
+  }, [selectedCategory, searchTerm]);
 
   const handleAddToCart = (product: Product) => {
     setCart(prev => {
@@ -249,24 +282,34 @@ const ShopPage = () => {
                                 type="text"
                                 placeholder="Поиск товаров..."
                                 className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                             />
                             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                         </div>
                         
-                        <select aria-label="Фильтр по категориям" className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 md:w-1/4 transition shadow-sm">
-                            <option>Все категории</option>
-                            <option>Еда</option>
-                            <option>Аксессуары</option>
-                            <option>Игрушки</option>
-                            <option>Здоровье</option>
-                            <option>Гигиена</option>
+                        {/* Выпадающий список категорий, связанный с состоянием */}
+                        <select 
+                            aria-label="Фильтр по категориям" 
+                            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 md:w-1/4 transition shadow-sm"
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                        >
+                            {categories.map(category => (
+                                <option key={category} value={category}>{category}</option>
+                            ))}
                         </select>
                     </div>
+                    {filteredProducts.length === 0 && (
+                        <p className="mt-4 text-center text-lg text-red-500 font-medium">
+                            Товары по выбранным фильтрам не найдены.
+                        </p>
+                    )}
                 </div>
 
-                {/* Сетка товаров */}
+                {/* Сетка товаров (используем отфильтрованный список) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {products.map(product => (
+                    {filteredProducts.map(product => (
                         <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
                     ))}
                 </div>
