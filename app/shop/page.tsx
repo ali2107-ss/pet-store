@@ -139,19 +139,7 @@ const ShopPage = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
                 <div className="flex items-center text-2xl font-bold text-indigo-700 tracking-tight cursor-pointer">
                     <Package className='w-7 h-7 mr-2 text-indigo-600'/>
-<<<<<<< HEAD
-                    {/* ИЗМЕНЕНИЕ: удалено (Simple) */}
-                    Pet Store
-=======
-                    Pet Store
-                </div>
-                <div className="relative">
-                    <button onClick={() => setIsCartOpen(true)} className="flex items-center bg-indigo-600 text-white px-5 py-2.5 rounded-full font-semibold shadow-lg hover:bg-indigo-700 transition transform hover:scale-105">
-                        <ShoppingCart className="w-5 h-5 mr-2"/>
-                        Корзина
-                    </button>
-                    {totalItems > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white">{totalItems}</span>}
->>>>>>> caf8752428a6f267417080a9c650c677c2f91743
+
                 </div>
             </div>
         </header>
