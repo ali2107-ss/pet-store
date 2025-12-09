@@ -1,159 +1,141 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Trash2, ShoppingBag } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
 
-type CartItem = {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-};
+export default function CartPage() {
+  const router = useRouter();
+  const { items, removeFromCart, clearCart } = useCart();
 
-const initialCartItems: CartItem[] = [
-  { id: 1, name: 'Сухой корм для кошек (2 кг)', price: 1500, quantity: 1, image: 'https://placehold.co/100x100/A0B2C0/ffffff?text=Корм' },
-  { id: 2, name: 'Игрушка "Мышка"', price: 200, quantity: 3, image: 'https://placehold.co/100x100/C0A0B2/ffffff?text=Мышка' },
-  { id: 3, name: 'Миска двойная', price: 1200, quantity: 1, image: 'https://placehold.co/100x100/B2C0A0/ffffff?text=Миска' },
-];
-
-const CartPage = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cart");
-      return saved ? JSON.parse(saved) : initialCartItems;
-    }
-    return initialCartItems;
-  });
-
-  const [removingId, setRemovingId] = useState<number | null>(null);
-
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cartItems));
-  }, [cartItems]);
-
-  const increment = (id: number) => {
-    setCartItems(prev =>
-      prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item)
-    );
+  const getTotalPrice = () => {
+    return items.reduce((total, item) => {
+      const price = parseInt(item.price.replace(/[^\d]/g, ''));
+      return total + (price * (item.quantity || 1));
+    }, 0);
   };
 
-  const decrement = (id: number) => {
-    setCartItems(prev =>
-      prev
-        .map(item => item.id === id ? { ...item, quantity: item.quantity - 1 } : item)
-        .filter(item => item.quantity > 0)
-    );
+  const formatPrice = (num: number) => {
+    return new Intl.NumberFormat('ru-RU').format(num) + ' ₸';
   };
 
-  const removeItem = (id: number) => {
-    setRemovingId(id);
-    setTimeout(() => {
-      setCartItems(prev => prev.filter(item => item.id !== id));
-      setRemovingId(null);
-    }, 500);
+  const handleCheckout = () => {
+    // Переходим на страницу доставки
+    router.push('/delivery');
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-  if (cartItems.length === 0) {
+  if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg border border-gray-100">
-          <ShoppingBag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Корзина пуста</h1>
-          <p className="text-gray-500 mb-6">Добавьте товары из нашего каталога!</p>
-          <a href="/shop" className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-150">
-            Перейти в магазин
-          </a>
+      <div className="min-h-screen bg-gray-50 py-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Link href="/animals" className="flex items-center text-indigo-600 hover:text-indigo-800 mb-8">
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Назад к животным
+          </Link>
+
+          <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
+            <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Корзина пуста</h1>
+            <p className="text-gray-600 mb-8">Добавьте животных из каталога, чтобы начать покупки</p>
+            <Link href="/animals">
+              <button className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">
+                Вернуться в каталог
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-10 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-8">Ваша Корзина ({cartItems.length})</h1>
+    <div className="min-h-screen bg-gray-50 py-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Link href="/animals" className="flex items-center text-indigo-600 hover:text-indigo-800 mb-8">
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          Назад к животным
+        </Link>
+
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">Корзина</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-4">
-            {cartItems.map(item => (
-              <div
-                key={item.id}
-                style={{
-                  opacity: removingId === item.id ? 0 : 1,
-                  transform: removingId === item.id ? 'scale(0.9)' : 'scale(1)',
-                  transition: 'all 0.5s ease',
-                }}
-                className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100"
-              >
-                <div className="flex items-center space-x-4 flex-1 min-w-0">
-                  <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-lg font-semibold text-gray-800 truncate">{item.name}</p>
-                    <p className="text-sm text-gray-500">{item.price.toLocaleString()} ₸ / шт.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4 ml-4">
-                  <div className="flex items-center border border-gray-300 rounded-lg">
-                    <button onClick={() => decrement(item.id)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-l-lg">
-                      <Minus className="w-4 h-4" />
-                    </button>
-
-                    <span className="px-3 text-lg font-medium text-gray-800">{item.quantity}</span>
-
-                    <button onClick={() => increment(item.id)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-r-lg">
-                      <Plus className="w-4 h-4" />
-                    </button>
+          {/* Список товаров */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-4 p-6 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors"
+                >
+                  {/* Изображение */}
+                  <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
 
-                  <p className="text-xl font-bold text-indigo-600 w-24 text-right hidden sm:block">
-                    {(item.price * item.quantity).toLocaleString()} ₸
-                  </p>
+                  {/* Информация */}
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
+                    <p className="text-sm text-gray-500 mt-1">Категория: {item.category}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-2xl font-bold text-indigo-600">{item.price}</span>
+                      {item.quantity && item.quantity > 1 && (
+                        <span className="text-sm text-gray-500">× {item.quantity}</span>
+                      )}
+                    </div>
+                  </div>
 
-                  <button onClick={() => removeItem(item.id)} className="p-3 text-red-500 hover:bg-red-100 rounded-full transition duration-150">
+                  {/* Кнопка удаления */}
+                  <button
+                    onClick={() => removeFromCart(item.id)}
+                    className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Удалить из корзины"
+                  >
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
+          {/* Сумма и действия */}
           <div className="lg:col-span-1">
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 sticky top-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4 border-b pb-3">Итог заказа</h2>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Итого</h2>
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-4 mb-6">
                 <div className="flex justify-between text-gray-600">
-                  <span>Промежуточный итог:</span>
-                  <span>{subtotal.toLocaleString()} ₸</span>
+                  <span>Товаров:</span>
+                  <span className="font-semibold">{items.length}</span>
                 </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Доставка:</span>
-                  <span className="text-green-600">Бесплатно</span>
+                <div className="border-t border-gray-200 pt-4 flex justify-between text-lg font-bold text-gray-900">
+                  <span>Сумма:</span>
+                  <span className="text-indigo-600">{formatPrice(getTotalPrice())}</span>
                 </div>
               </div>
 
-              <div className="flex justify-between text-2xl font-extrabold text-gray-900 border-t pt-4">
-                <span>Итого к оплате:</span>
-                <span>{subtotal.toLocaleString()} ₸</span>
-              </div>
-
-              <a 
-                href="delivery"
-                className="mt-6 w-full flex items-center justify-center bg-indigo-600 text-white p-4 rounded-lg text-xl font-semibold hover:bg-indigo-700 transition duration-150 shadow-indigo-500/50 shadow-lg"
+              <button 
+                onClick={handleCheckout}
+                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 transition-colors mb-3"
               >
-                <ShoppingBag className="w-6 h-6 mr-2" />
                 Оформить заказ
-              </a>
+              </button>
+
+              <button
+                onClick={() => clearCart()}
+                className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+              >
+                Очистить корзину
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default CartPage;
+}

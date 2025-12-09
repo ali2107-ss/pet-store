@@ -1,10 +1,48 @@
 "use client";
 
-import { useState } from 'react';
-import { MapPin, CreditCard, CheckCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { MapPin, CreditCard, CheckCircle, ArrowLeft } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
+
+interface DeliveryData {
+  city: string;
+  address: string;
+  apartment: string;
+  phone: string;
+  paymentMethod: 'card' | 'cash' | '';
+}
 
 const DeliveryPaymentPage = () => {
+  const router = useRouter();
+  const { items, clearCart } = useCart();
   const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState<DeliveryData>({
+    city: '',
+    address: '',
+    apartment: '',
+    phone: '',
+    paymentMethod: '',
+  });
+  const [loading, setLoading] = useState(false);
+
+  // Загружаем сохранённые данные при монтировании
+  useEffect(() => {
+    const saved = localStorage.getItem('delivery_data');
+    if (saved) {
+      try {
+        setFormData(JSON.parse(saved));
+      } catch (e) {
+        console.error('Ошибка при загрузке данных:', e);
+      }
+    }
+  }, []);
+
+  // Сохраняем данные в localStorage при изменении
+  useEffect(() => {
+    localStorage.setItem('delivery_data', JSON.stringify(formData));
+  }, [formData]);
 
   const steps = [
     { name: 'Адрес', icon: MapPin },
@@ -12,8 +50,73 @@ const DeliveryPaymentPage = () => {
     { name: 'Подтверждение', icon: CheckCircle },
   ];
 
+  const handleInputChange = (field: keyof DeliveryData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleNextStep = () => {
+    // Валидация шага 1
+    if (step === 1) {
+      if (!formData.city || !formData.address || !formData.phone) {
+        alert('Пожалуйста, заполните все поля');
+        return;
+      }
+    }
+    // Валидация шага 2
+    if (step === 2) {
+      if (!formData.paymentMethod) {
+        alert('Пожалуйста, выберите способ оплаты');
+        return;
+      }
+      handlePayment();
+      return;
+    }
     if (step < 3) setStep(step + 1);
+  };
+
+  const handlePayment = async () => {
+    setLoading(true);
+    try {
+      // Имитация обработки платежа
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Сохраняем заказ в историю
+      const order = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('ru-RU'),
+        items: items,
+        total: getTotalPrice(),
+        delivery: formData,
+        status: 'Завершён',
+      };
+
+      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      orders.push(order);
+      localStorage.setItem('orders', JSON.stringify(orders));
+
+      // Очищаем корзину
+      clearCart();
+      localStorage.removeItem('delivery_data');
+
+      // Переходим на шаг 3 (успех)
+      setStep(3);
+    } catch (err) {
+      console.error('Ошибка при оплате:', err);
+      alert('Ошибка при обработке платежа');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTotalPrice = () => {
+    return items.reduce((total, item) => {
+      const price = parseInt(item.price.replace(/[^\d]/g, ''));
+      return total + (price * (item.quantity || 1));
+    }, 0);
+  };
+
+  const formatPrice = (num: number) => {
+    return new Intl.NumberFormat('ru-RU').format(num) + ' ₸';
   };
 
   const handlePrevStep = () => {
@@ -31,26 +134,49 @@ const DeliveryPaymentPage = () => {
             </h2>
 
             <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Город"
-                className="w-full p-3 border rounded-lg bg-white text-black placeholder-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Улица, дом"
-                className="w-full p-3 border rounded-lg bg-white text-black placeholder-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Квартира / подъезд"
-                className="w-full p-3 border rounded-lg bg-white text-black placeholder-gray-400"
-              />
-              <input
-                type="tel"
-                placeholder="Телефон"
-                className="w-full p-3 border rounded-lg bg-white text-black placeholder-gray-400"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                <input
+                  type="text"
+                  value={formData.city}
+                  onChange={(e) => handleInputChange('city', e.target.value)}
+                  placeholder="Введите ваш город"
+                  className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Улица и дом *</label>
+                <input
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  placeholder="Улица, дом"
+                  className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Квартира / подъезд</label>
+                <input
+                  type="text"
+                  value={formData.apartment}
+                  onChange={(e) => handleInputChange('apartment', e.target.value)}
+                  placeholder="Квартира, офис (опционально)"
+                  className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Телефон *</label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  placeholder="+7 (700) 000-00-00"
+                  className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                />
+              </div>
             </div>
 
             <button
@@ -59,6 +185,13 @@ const DeliveryPaymentPage = () => {
             >
               Перейти к оплате
             </button>
+
+            <Link href="/cart">
+              <button className="w-full text-indigo-600 hover:text-indigo-500 font-medium py-2 flex items-center justify-center">
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Вернуться в корзину
+              </button>
+            </Link>
           </div>
         );
 
@@ -67,38 +200,62 @@ const DeliveryPaymentPage = () => {
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-800 flex items-center">
               <CreditCard className="w-6 h-6 mr-3 text-indigo-600" />
-              Шаг 2: Оплата
+              Шаг 2: Способ оплаты
             </h2>
 
-            <p className="text-gray-600">Отсканируйте QR-код для оплаты</p>
-
-            <div className="flex justify-center">
-              <img
-                src="/qr-demo.png"
-                alt="QR код для оплаты"
-                className="w-48 h-48"
-              />
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600 font-medium">Сумма к оплате:</p>
+              <p className="text-3xl font-bold text-indigo-600 mt-2">{formatPrice(getTotalPrice())}</p>
             </div>
 
-            <div className="mt-4">
-              <p className="text-center text-sm text-gray-500 mb-2">
-                Небольшое видео пока происходит оплата 😄
-              </p>
-              <iframe
-                width="100%"
-                height="250"
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                allow="autoplay; encrypted-media"
-                allowFullScreen
-                className="rounded-lg"
-              ></iframe>
+            <div className="space-y-3">
+              <p className="font-semibold text-gray-800">Выберите способ оплаты:</p>
+
+              <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${
+                formData.paymentMethod === 'card'
+                  ? 'border-indigo-600 bg-indigo-50'
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}>
+                <input
+                  type="radio"
+                  name="payment"
+                  value="card"
+                  checked={formData.paymentMethod === 'card'}
+                  onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
+                  className="w-5 h-5 text-indigo-600"
+                />
+                <div className="ml-3">
+                  <p className="font-semibold text-gray-800">💳 Оплата карточкой</p>
+                  <p className="text-sm text-gray-600">Visa, MasterCard, Kaspi</p>
+                </div>
+              </label>
+
+              <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${
+                formData.paymentMethod === 'cash'
+                  ? 'border-indigo-600 bg-indigo-50'
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}>
+                <input
+                  type="radio"
+                  name="payment"
+                  value="cash"
+                  checked={formData.paymentMethod === 'cash'}
+                  onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
+                  className="w-5 h-5 text-indigo-600"
+                />
+                <div className="ml-3">
+                  <p className="font-semibold text-gray-800">💵 Наличными при получении</p>
+                  <p className="text-sm text-gray-600">Оплата при доставке</p>
+                </div>
+              </label>
             </div>
 
             <button
               onClick={handleNextStep}
-              className="w-full flex justify-center py-3 px-4 rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150"
+              disabled={loading}
+              className="w-full flex justify-center py-3 px-4 rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Я оплатил / Подтвердить
+              {loading ? 'Обработка платежа...' : 'Продолжить оплату'}
             </button>
 
             <button
@@ -113,16 +270,31 @@ const DeliveryPaymentPage = () => {
 
       case 3:
         return (
-          <div className="text-center p-8 bg-white rounded-xl shadow-2xl border border-green-100">
+          <div className="text-center p-8 bg-white rounded-xl">
             <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-6" />
-            <h2 className="text-3xl font-bold text-gray-800 mb-3">Спасибо за Ваш заказ!</h2>
-            <p className="text-xl text-gray-600 mb-6">Ваш заказ принят и передан на сборку.</p>
-            <a
-              href="/"
-              className="mt-8 w-full block py-3 px-4 border border-transparent rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150"
-            >
-              Вернуться на главную
-            </a>
+            <h2 className="text-3xl font-bold text-gray-800 mb-3">Спасибо за ваш заказ! ✅</h2>
+            <p className="text-xl text-gray-600 mb-6">Заказ принят и передан на сборку.</p>
+            
+            <div className="bg-gray-50 p-4 rounded-lg mb-6 text-left">
+              <p className="text-sm text-gray-600"><strong>Город доставки:</strong> {formData.city}</p>
+              <p className="text-sm text-gray-600"><strong>Адрес:</strong> {formData.address} {formData.apartment ? `, ${formData.apartment}` : ''}</p>
+              <p className="text-sm text-gray-600"><strong>Телефон:</strong> {formData.phone}</p>
+              <p className="text-sm text-gray-600"><strong>Способ оплаты:</strong> {formData.paymentMethod === 'card' ? 'Карточка' : 'Наличные'}</p>
+            </div>
+
+            <div className="space-y-3">
+              <Link href="/profile">
+                <button className="w-full py-3 px-4 border border-transparent rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
+                  Перейти в профиль и историю покупок
+                </button>
+              </Link>
+
+              <Link href="/animals">
+                <button className="w-full py-3 px-4 border border-indigo-600 text-indigo-600 rounded-lg text-lg font-medium hover:bg-indigo-50 transition duration-150">
+                  Продолжить покупки
+                </button>
+              </Link>
+            </div>
           </div>
         );
 
@@ -130,10 +302,11 @@ const DeliveryPaymentPage = () => {
         return null;
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-50 pt-10 pb-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">
           Оформление заказа
         </h1>
 

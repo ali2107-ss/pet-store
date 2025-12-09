@@ -1,96 +1,88 @@
-"use client";
+'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Тип товара
-export type CartItem = {
-  id: string | number;
-  name: string;
-  price: number;
-  image?: string;
-  quantity: number;
-  category?: string;
-};
+export interface CartItem {
+  id: number;
+  title: string;
+  price: string;
+  image: string;
+  category: string;
+  quantity?: number;
+}
 
-type CartContextType = {
-  cartItems: CartItem[];
-  // legacy / convenience alias used by some components
+interface CartContextType {
   items: CartItem[];
-  addToCart: (product: CartItem | any) => void;
-  removeFromCart: (id: string | number) => void;
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (id: number) => void;
   clearCart: () => void;
-  cartTotal: number;
-  cartCount: number;
-};
+  getTotalItems: () => number;
+}
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    try {
-      if (typeof window === 'undefined') return [];
-      const savedCart = localStorage.getItem('petPalaceCart');
-      return savedCart ? JSON.parse(savedCart) : [];
-    } catch {
-      return [];
-    }
-  });
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
+  // Загрузить корзину из localStorage при монтировании
   useEffect(() => {
-    try {
-      localStorage.setItem('petPalaceCart', JSON.stringify(cartItems));
-    } catch {
-      // ignore localStorage errors
+    const savedCart = localStorage.getItem('pet_store_cart');
+    if (savedCart) {
+      try {
+        setItems(JSON.parse(savedCart));
+      } catch (e) {
+        console.error('Ошибка при загрузке корзины:', e);
+      }
     }
-  }, [cartItems]);
+    setIsLoaded(true);
+  }, []);
 
-  const addToCart = (product: any) => {
-    setCartItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id && item.name === product.name);
-      if (existing) {
-        return prev.map((item) =>
-          item.id === product.id && item.name === product.name
-            ? { ...item, quantity: item.quantity + (product.quantity || 1) }
-            : item
+  // Сохранять корзину в localStorage при изменении
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem('pet_store_cart', JSON.stringify(items));
+    }
+  }, [items, isLoaded]);
+
+  const addToCart = (item: CartItem) => {
+    setItems((prevItems) => {
+      const existingItem = prevItems.find((i) => i.id === item.id);
+      if (existingItem) {
+        // Если товар уже в корзине, увеличиваем количество
+        return prevItems.map((i) =>
+          i.id === item.id
+            ? { ...i, quantity: (i.quantity || 1) + 1 }
+            : i
         );
       }
-
-      let price = product.price;
-      if (typeof product.price === 'string') {
-        price = parseInt(product.price.replace(/\D/g, ''), 10) || 0;
-      }
-
-      const newItem: CartItem = {
-        id: product.id,
-        name: product.name,
-        price: price,
-        image: product.image,
-        quantity: product.quantity || 1,
-        category: product.category,
-      };
-
-      return [...prev, newItem];
+      return [...prevItems, { ...item, quantity: 1 }];
     });
   };
 
-  const removeFromCart = (id: string | number) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  const removeFromCart = (id: number) => {
+    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
-  const clearCart = () => setCartItems([]);
+  const clearCart = () => {
+    setItems([]);
+  };
 
-  const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const getTotalItems = () => {
+    return items.reduce((total, item) => total + (item.quantity || 1), 0);
+  };
 
   return (
-    <CartContext.Provider value={{ cartItems, items: cartItems, addToCart, removeFromCart, clearCart, cartTotal, cartCount }}>
+    <CartContext.Provider value={{ items, addToCart, removeFromCart, clearCart, getTotalItems }}>
       {children}
     </CartContext.Provider>
   );
-};
+}
 
-export const useCart = (): CartContextType => {
+export function useCart() {
   const context = useContext(CartContext);
-  if (!context) throw new Error('useCart must be used within a CartProvider');
+  if (!context) {
+    throw new Error('useCart must be used within CartProvider');
+  }
   return context;
-};
+}

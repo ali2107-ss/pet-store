@@ -1,12 +1,37 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { User, ShoppingBag, MapPin, Heart, LogOut, Settings, CreditCard, Package } from 'lucide-react';
+
+interface Order {
+  id: number;
+  date: string;
+  items: Array<{ title: string; price: string; image: string; category: string }>;
+  total: number;
+  delivery: { city: string; address: string; apartment: string; phone: string; paymentMethod: string };
+  status: string;
+}
 
 const ProfilePage = () => {
     const [activeTab, setActiveTab] = useState('orders');
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Моковые данные пользователя
+    useEffect(() => {
+      // Загружаем заказы из localStorage
+      const saved = localStorage.getItem('orders');
+      if (saved) {
+        try {
+          setOrders(JSON.parse(saved));
+        } catch (e) {
+          console.error('Ошибка при загрузке заказов:', e);
+        }
+      }
+      setLoading(false);
+    }, []);
+
+    // Данные пользователя
     const user = {
         name: 'Идаят Али',
         email: 'ali2107idai@gmail.com',
@@ -15,22 +40,15 @@ const ProfilePage = () => {
         joinDate: 'с нами с 2025 года'
     };
 
-    // Моковые данные заказов
-    const orders = [
-        { id: '#ORD-9876', status: 'Доставлен', total: 14500, date: '10.05.2025', items: ['Корм ProPlan (10кг)', 'Игрушка Kong'] },
-        { id: '#ORD-9875', status: 'В пути', total: 2800, date: '20.09.2025', items: ['Витамины для шерсти'] },
-        { id: '#ORD-9874', status: 'Обработка', total: 6100, date: '21.10.2025', items: ['Лежанка Soft', 'Миска керамическая'] },
-    ];
-
     // Компонент для отображения одного заказа
-    const OrderItem = ({ order }: { order: any }) => (
+    const OrderItem = ({ order }: { order: Order }) => (
         <div className="bg-white border border-gray-100 rounded-xl p-6 hover:shadow-md transition-shadow duration-200 mb-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
                 <div>
                     <div className="flex items-center gap-3">
-                        <span className="font-bold text-lg text-gray-900">{order.id}</span>
+                        <span className="font-bold text-lg text-gray-900">Заказ #{order.id}</span>
                         <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
-                            order.status === 'Доставлен' ? 'bg-green-100 text-green-800' :
+                            order.status === 'Завершён' ? 'bg-green-100 text-green-800' :
                             order.status === 'В пути' ? 'bg-blue-100 text-blue-800' :
                             'bg-yellow-100 text-yellow-800'
                         }`}>
@@ -42,19 +60,33 @@ const ProfilePage = () => {
                 <p className="text-xl font-bold text-indigo-600 mt-2 sm:mt-0">{order.total.toLocaleString()} ₸</p>
             </div>
             
-            <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-2">Состав заказа:</p>
-                <ul className="list-disc list-inside text-gray-700 text-sm space-y-1">
-                    {order.items.map((item: string, index: number) => (
-                        <li key={index}>{item}</li>
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <p className="text-sm text-gray-700 font-medium mb-3">Животные в заказе:</p>
+                <div className="space-y-2">
+                    {order.items.map((item, index) => (
+                        <div key={index} className="flex items-center gap-3">
+                            <img src={item.image} alt={item.title} className="w-10 h-10 rounded object-cover" />
+                            <div>
+                                <p className="text-sm font-medium text-gray-900">{item.title}</p>
+                                <p className="text-xs text-gray-500">{item.price}</p>
+                            </div>
+                        </div>
                     ))}
-                </ul>
+                </div>
             </div>
-            
-            <div className="mt-4 flex justify-end">
-                <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
-                    Повторить заказ
-                </button>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-gray-600 mb-2"><strong>Адрес доставки:</strong></p>
+                <p className="text-sm text-gray-800">
+                  {order.delivery.city}, {order.delivery.address}
+                  {order.delivery.apartment ? `, ${order.delivery.apartment}` : ''}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  <strong>Телефон:</strong> {order.delivery.phone}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Способ оплаты:</strong> {order.delivery.paymentMethod === 'card' ? 'Карточка' : 'Наличные'}
+                </p>
             </div>
         </div>
     );
@@ -70,13 +102,21 @@ const ProfilePage = () => {
                                 {orders.length} заказов
                             </span>
                         </div>
-                        {orders.length > 0 ? (
-                            orders.map(order => <OrderItem key={order.id} order={order} />)
+                        {loading ? (
+                            <div className="text-center py-12">
+                                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                            </div>
+                        ) : orders.length > 0 ? (
+                            <div>
+                                {orders.map(order => <OrderItem key={order.id} order={order} />)}
+                            </div>
                         ) : (
                             <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
                                 <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                                <p className="text-gray-500">У вас пока нет заказов.</p>
-                                <button className="mt-4 text-indigo-600 font-medium hover:underline">Перейти в каталог</button>
+                                <p className="text-gray-500 mb-4">У вас пока нет заказов.</p>
+                                <Link href="/animals">
+                                    <button className="text-indigo-600 font-medium hover:underline">Перейти в каталог животных</button>
+                                </Link>
                             </div>
                         )}
                     </div>
@@ -219,7 +259,7 @@ const ProfilePage = () => {
                                     <span>{item.name}</span>
                                     {item.id === 'orders' && (
                                         <span className="ml-auto bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full">
-                                            3
+                                            {orders.length}
                                         </span>
                                     )}
                                 </button>
