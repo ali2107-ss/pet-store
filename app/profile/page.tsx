@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { User, ShoppingBag, MapPin, Heart, LogOut, Settings, CreditCard, Package } from 'lucide-react';
+import supabase from '../../lib/supabaseClient';
 
 interface Order {
   id: number;
@@ -18,27 +20,40 @@ const ProfilePage = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-      // Загружаем заказы из localStorage
-      const saved = localStorage.getItem('orders');
-      if (saved) {
-        try {
-          setOrders(JSON.parse(saved));
-        } catch (e) {
-          console.error('Ошибка при загрузке заказов:', e);
-        }
-      }
-      setLoading(false);
-    }, []);
+        const [user, setUser] = useState<any | null>(null);
+        const router = useRouter();
 
-    // Данные пользователя
-    const user = {
-        name: 'Идаят Али',
-        email: 'ali2107idai@gmail.com',
-        phone: '+7 778 648 2899',
-        avatar: 'https://placehold.co/150x150/4F46E5/ffffff?text=AP',
-        joinDate: 'с нами с 2025 года'
-    };
+        useEffect(() => {
+            // Загружаем заказы из localStorage
+            const saved = localStorage.getItem('orders');
+            if (saved) {
+                try {
+                    setOrders(JSON.parse(saved));
+                } catch (e) {
+                    console.error('Ошибка при загрузке заказов:', e);
+                }
+            }
+            setLoading(false);
+
+            // Получаем текущего пользователя (если есть)
+            (async () => {
+                const { data, error } = await supabase.auth.getUser();
+                if (error) {
+                    console.error('Ошибка получения пользователя:', error);
+                } else {
+                    setUser(data.user ?? null);
+                }
+            })();
+
+            // Подписка на изменения аутентификации
+            const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+                setUser(session?.user ?? null);
+            });
+
+            return () => {
+                subscription.unsubscribe();
+            };
+        }, []);
 
     // Компонент для отображения одного заказа
     const OrderItem = ({ order }: { order: Order }) => (
@@ -90,6 +105,20 @@ const ProfilePage = () => {
             </div>
         </div>
     );
+
+    const displayUser = user ? {
+        name: user.user_metadata?.full_name || user.email || 'Пользователь',
+        email: user.email,
+        phone: user.user_metadata?.phone || '',
+        avatar: user.user_metadata?.avatar || 'https://placehold.co/150x150/4F46E5/ffffff?text=U',
+        joinDate: user.created_at ? `с нами с ${new Date(user.created_at).getFullYear()} года` : ''
+    } : {
+        name: 'Гость',
+        email: '',
+        phone: '',
+        avatar: 'https://placehold.co/150x150/9CA3AF/ffffff?text=Guest',
+        joinDate: ''
+    };
 
     const renderContent = () => {
         switch (activeTab) {
@@ -210,8 +239,8 @@ const ProfilePage = () => {
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-10">
                         <div className="relative">
                             <img 
-                                src={user.avatar} 
-                                alt={user.name} 
+                                src={displayUser?.avatar} 
+                                alt={displayUser?.name || 'Аватар'} 
                                 className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
                             />
                             <button type="button" aria-label="Настройки профиля" title="Настройки профиля" className="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow-sm border border-gray-200 hover:bg-gray-50 text-gray-600">
@@ -220,20 +249,27 @@ const ProfilePage = () => {
                         </div>
                         
                         <div className="text-center md:text-left flex-grow">
-                            <h1 className="text-3xl font-bold text-gray-900 mb-1">{user.name}</h1>
+                            <h1 className="text-3xl font-bold text-gray-900 mb-1">{displayUser?.name || 'Гость'}</h1>
                             <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-gray-500 text-sm mb-4">
-                                <span>{user.email}</span>
+                                <span>{displayUser?.email}</span>
                                 <span className="hidden md:inline">•</span>
-                                <span>{user.phone}</span>
+                                <span>{displayUser?.phone}</span>
                             </div>
                             <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-medium">
-                                {user.joinDate}
+                                {displayUser?.joinDate}
                             </div>
                         </div>
 
                         <button 
                             className="flex items-center text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors"
-                            onClick={() => console.log('Logout')}
+                            onClick={async () => {
+                                try {
+                                    await supabase.auth.signOut();
+                                    router.push('/login');
+                                } catch (e) {
+                                    console.error('Logout error', e);
+                                }
+                            }}
                         >
                             <LogOut className="w-5 h-5 mr-2" />
                             <span className="font-medium">Выйти</span>

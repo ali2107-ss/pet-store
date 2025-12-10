@@ -1,16 +1,88 @@
 "use client";
 import React, { useState } from 'react';
 import { User, Lock, Mail, ArrowRight } from 'lucide-react';
+import supabase from '../../lib/supabaseClient';
+import { useRouter } from 'next/navigation';
 
 const AuthPage = () => {
-    // Состояние для переключения между Входом (true) и Регистрацией (false)
     const [isLogin, setIsLogin] = useState(true);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState<string | null>(null);
+    const router = useRouter();
 
-    const handleSubmit = (e: { preventDefault: () => void; }) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const action = isLogin ? 'Вход' : 'Регистрация';
-        console.log(`${action} нажата`);
-        // Здесь в будущем будет логика для аутентификации
+        setMessage(null);
+        setLoading(true);
+
+        try {
+            if (isLogin) {
+                // Вход
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                
+                // Проверяем, есть ли профиль, если нет — создаём
+                if (data.user) {
+                    const { data: existingProfile } = await supabase
+                        .from('profiles')
+                        .select('id')
+                        .eq('id', data.user.id)
+                        .single();
+
+                    if (!existingProfile) {
+                        // Профиля нет — создаём
+                        await supabase.from('profiles').insert({
+                            id: data.user.id,
+                            email: data.user.email,
+                            full_name: data.user.user_metadata?.full_name || data.user.email,
+                        });
+                    }
+                }
+                
+                // Редирект на профиль
+                router.push('/profile');
+            } else {
+                // Попытка регистрации через серверный endpoint (создаёт подтверждённого пользователя).
+                // Если сервер не настроен (нет service role key), откатываемся на клиентский signUp.
+                try {
+                    const res = await fetch('/api/admin/create-user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password, full_name: name })
+                    });
+
+                    // Если сервер вернул 500 (misconfigured) — попробуем клиентский flow
+                    if (res.status === 500) {
+                        console.warn('Server signup returned 500, falling back to client signUp');
+                        const { data, error } = await (supabase as any).auth.signUp({ email, password });
+                        if (error) {
+                            throw error;
+                        }
+                        setMessage('Аккаунт создан. Проверьте почту для подтверждения (если требуется).');
+                        return;
+                    }
+
+                    const json = await res.json();
+                    if (!res.ok) {
+                        throw new Error(json.error || 'Registration failed');
+                    }
+
+                    // Успешно создан на сервере — редирект на профиль
+                    router.push('/profile');
+                } catch (e: any) {
+                    console.error('Server signup error', e);
+                    setMessage(e.message || 'Ошибка регистрации');
+                }
+            }
+        } catch (err: any) {
+            console.error('Auth error', err);
+            setMessage(err.message || 'Ошибка аутентификации');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const title = isLogin ? 'Вход в аккаунт' : 'Создать аккаунт';
@@ -27,7 +99,6 @@ const AuthPage = () => {
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    {/* Поле имени - только для регистрации */}
                     {!isLogin && (
                         <div>
                             <label htmlFor="name" className="sr-only">Имя</label>
@@ -37,15 +108,15 @@ const AuthPage = () => {
                                     id="name"
                                     name="name"
                                     type="text"
-                                    required
-                                    className="appearance-none rounded-lg relative block w-full pl-12 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="appearance-none rounded-lg relative block w-full pl-12 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                     placeholder="Ваше Имя"
                                 />
                             </div>
                         </div>
                     )}
                     
-                    {/* Поле Email */}
                     <div>
                         <label htmlFor="email" className="sr-only">Email адрес</label>
                         <div className="relative">
@@ -55,14 +126,15 @@ const AuthPage = () => {
                                 name="email"
                                 type="email"
                                 autoComplete="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="appearance-none rounded-lg relative block w-full pl-12 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150"
+                                className="appearance-none rounded-lg relative block w-full pl-12 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 placeholder="Email адрес"
                             />
                         </div>
                     </div>
                     
-                    {/* Поле Пароль */}
                     <div>
                         <label htmlFor="password" className="sr-only">Пароль</label>
                         <div className="relative">
@@ -72,20 +144,25 @@ const AuthPage = () => {
                                 name="password"
                                 type="password"
                                 autoComplete={isLogin ? "current-password" : "new-password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="appearance-none rounded-lg relative block w-full pl-12 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150"
+                                className="appearance-none rounded-lg relative block w-full pl-12 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 placeholder="Пароль"
                             />
                         </div>
                     </div>
 
+                    {message && <div className="text-sm text-red-600">{message}</div>}
+
                     <div>
                         <button
                             type="submit"
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 shadow-md"
+                            disabled={loading}
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 shadow-md disabled:opacity-60"
                         >
-                            {buttonText}
-                            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition duration-150" />
+                            {loading ? 'Подождите...' : buttonText}
+                            <ArrowRight className="w-5 h-5 ml-2" />
                         </button>
                     </div>
                 </form>
