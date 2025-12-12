@@ -160,26 +160,7 @@ const HomePage: React.FC = () => {
                 </div>
             </section>
 
-            {/* === ХИТЫ ПРОДАЖ === */}
-            <section className="bg-gray-50 py-20">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-12">
-                        <div>
-                            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">Хиты продаж</h2>
-                            <p className="text-gray-500">Товары, которые выбирают тысячи хозяев</p>
-                        </div>
-                        <a href="/shop" className="text-indigo-600 font-bold hover:text-indigo-800 flex items-center mt-4 md:mt-0 transition-colors">
-                            Смотреть весь каталог <ArrowRight className="w-5 h-5 ml-2" />
-                        </a>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {featuredProducts.map(product => (
-                            <FeaturedProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
-                </div>
-            </section>
+           
 
             {/* === АКЦИЯ (БАННЕР ВНИЗУ) */}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

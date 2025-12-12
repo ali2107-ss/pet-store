@@ -200,7 +200,7 @@ const ShopPage = () => {
     setFlyCart(true);
     setTimeout(() => setFlyCart(false), 600);
   };
-	
+  
   // Функции для модального окна деталей
   const handleOpenDetails = (product: Product) => {
     setSelectedProduct(product);
@@ -213,33 +213,14 @@ const ShopPage = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen font-sans relative">
-      	{/* Анимация «летящей» корзины */}
-      	{flyCart && (
-      		<div className="fixed w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-fly-to-top-right z-50">
-      			<ShoppingCart className="w-5 h-5"/>
-      		</div>
-      	)}
-
-      {/* Хедер */}
-      <header className="bg-white shadow-md sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-          <div className="flex items-center text-2xl font-bold text-indigo-700 tracking-tight cursor-pointer">
-            <Package className='w-7 h-7 mr-2 text-indigo-600'/>
-            Pet Store
+        {/* Анимация «летящей» корзины */}
+        {flyCart && (
+          <div className="fixed w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-fly-to-top-right z-50">
+            <ShoppingCart className="w-5 h-5"/>
           </div>
-          {/* Кнопка Корзины */}
-          <button 
-            onClick={() => setIsCartOpen(true)} 
-            className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-indigo-700 transition duration-150 relative shadow-md"
-          >
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            Корзина
-            {totalItems > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 flex items-center justify-center rounded-full font-bold border-2 border-white">{totalItems}</span>
-            )}
-          </button>
-        </div>
-      </header>
+        )}
+
+      
 
       <main className="min-h-[80vh] py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -251,10 +232,23 @@ const ShopPage = () => {
           <div className="mb-12 bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-grow">
-                <input type="text" placeholder="Поиск товаров..." className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                {/* ИЗМЕНЕНИЕ: Добавлен класс text-gray-900 для черного текста в поле ввода */}
+                <input 
+                  type="text" 
+                  placeholder="Поиск товаров..." 
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm text-gray-900" 
+                  value={searchTerm} 
+                  onChange={(e) => setSearchTerm(e.target.value)} 
+                />
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
-              <select aria-label="Фильтр по категориям" className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 md:w-1/4 transition shadow-sm" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+              {/* ИЗМЕНЕНИЕ: Добавлен класс text-gray-900 для черного текста в селекте */}
+              <select 
+                aria-label="Фильтр по категориям" 
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 md:w-1/4 transition shadow-sm text-gray-900" 
+                value={selectedCategory} 
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
@@ -322,10 +316,6 @@ const ShopPage = () => {
         </div>
       )}
 
-      <footer className="bg-gray-800 text-white mt-12 text-center py-6">
-        &copy; {new Date().getFullYear()} Pet Store. Корзина сохраняется в браузере.
-      </footer>
-
       {/* Анимация CSS */}
       <style jsx>{`
         @keyframes fly-to-top-right {
@@ -340,4 +330,4 @@ const ShopPage = () => {
   );
 };
 
-export default ShopPage;  
+export default ShopPage;
