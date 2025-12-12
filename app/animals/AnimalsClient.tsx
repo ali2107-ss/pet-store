@@ -71,7 +71,7 @@ const staticAnimalsData: Animal[] = [
 ];
 
 export default function AnimalsClient({ categories, initialAnimals }: AnimalsClientProps) {
-  // Используем статические данные как fallback если API пусто
+  const [flyCart, setFlyCart] = useState(false);     // ← ЭТО ДОЛЖНО БЫТЬ ТУТ!
   const animalsToUse = initialAnimals && initialAnimals.length > 0 ? initialAnimals : staticAnimalsData;
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [filteredAnimals, setFilteredAnimals] = useState<Animal[]>(animalsToUse);
@@ -89,94 +89,104 @@ export default function AnimalsClient({ categories, initialAnimals }: AnimalsCli
     : null;
 
   const handleAddToCart = (animal: Animal) => {
-    // Добавляем в контекст
-    addToCart({
-      id: animal.id,
-      title: animal.title,
-      price: animal.price,
-      image: animal.image,
-      category: animal.category,
-      quantity: 1,
-    });
+  addToCart({
+    id: animal.id,
+    title: animal.title,
+    price: animal.price,
+    image: animal.image,
+    category: animal.category,
+    quantity: 1,
+  });
 
-    // Показываем анимацию
-    setAddedItemId(animal.id);
-    setTimeout(() => setAddedItemId(null), 600);
+  // Анимация кнопки
+  setAddedItemId(animal.id);
+  setTimeout(() => setAddedItemId(null), 600);
 
-    // Уведомление
-    alert(`✅ "${animal.title}" добавлен в корзину!`);
-  };
+  // Анимация корзины
+  setFlyCart(true);
+  setTimeout(() => setFlyCart(false), 800);
+};
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {!selectedCategory ? (
-          <>
-            <div className="text-center mb-12">
-              <h1 className="text-4xl font-extrabold text-indigo-900 mb-4">
-                Животные
-              </h1>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Найдите своего идеального питомца или пополните хозяйство. Все
-                животные прошли ветеринарный контроль.
+  <div className="min-h-screen bg-gray-50 py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {!selectedCategory ? (
+        <>
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-extrabold text-indigo-900 mb-4">
+              Животные
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Найдите своего идеального питомца или пополните хозяйство. Все
+              животные прошли ветеринарный контроль.
+            </p>
+
+            {/* Анимация корзины */}
+            {flyCart && (
+              <div className="fixed w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-fly-to-top-right z-50">
+                <ShoppingCart className="w-5 h-5" />
+              </div>
+            )}
+          </div>
+
+          {/* ✔️ УБРАЛ лишние скобки — теперь JSX правильный */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {categories.map((cat: Category) => (
+              <div
+                key={cat.id}
+                onClick={() => selectCategory(cat.id)}
+                className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 cursor-pointer group"
+              >
+                <div className="bg-indigo-50 w-16 h-16 rounded-full flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition-colors duration-300">
+                  <div className="text-indigo-600 group-hover:text-white transition-colors duration-300">
+                    <HorseIcon />
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors">
+                  {cat.name}
+                </h2>
+                <p className="text-gray-500 leading-relaxed mb-6">
+                  {cat.description}
+                </p>
+                <span className="inline-flex items-center text-indigo-600 font-semibold group-hover:translate-x-2 transition-transform duration-300">
+                  Смотреть объявления →
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-16 bg-white rounded-3xl p-8 md:p-12 shadow-lg border border-indigo-50 flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1">
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">
+                Не нашли кого искали?
+              </h3>
+              <p className="text-lg text-gray-600 mb-6">
+                Мы сотрудничаем с лучшими питомниками и фермами. Оставьте
+                заявку, и мы поможем найти конкретную породу или вид животного.
+              </p>
+              <a href="/application">
+                <button className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
+                  Оставить заявку на поиск
+                </button>
+              </a>
+            </div>
+            <div className="w-full md:w-1/3 bg-indigo-50 rounded-2xl p-6 text-center">
+              <p className="text-indigo-900 font-bold text-lg mb-2">
+                Горячая линия
+              </p>
+              <p className="text-3xl font-extrabold text-indigo-600">
+                +7 (777) 123-45-67
+              </p>
+              <p className="text-sm text-indigo-400 mt-2">
+                Ежедневно с 9:00 до 21:00
               </p>
             </div>
+          </div>
+        </>
+      ) : (
+        <div className="animate-fade-in">
+          {/* Дальше твой второй блок полностью корректный */}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {categories.map((cat: Category) => (
-                <div
-                  key={cat.id}
-                  onClick={() => selectCategory(cat.id)}
-                  className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 cursor-pointer group"
-                >
-                  <div className="bg-indigo-50 w-16 h-16 rounded-full flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition-colors duration-300">
-                    <div className="text-indigo-600 group-hover:text-white transition-colors duration-300">
-                      <HorseIcon />
-                    </div>
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors">
-                    {cat.name}
-                  </h2>
-                  <p className="text-gray-500 leading-relaxed mb-6">
-                    {cat.description}
-                  </p>
-                  <span className="inline-flex items-center text-indigo-600 font-semibold group-hover:translate-x-2 transition-transform duration-300">
-                    Смотреть объявления →
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-16 bg-white rounded-3xl p-8 md:p-12 shadow-lg border border-indigo-50 flex flex-col md:flex-row items-center gap-8">
-              <div className="flex-1">
-                <h3 className="text-3xl font-bold text-gray-900 mb-4">
-                  Не нашли кого искали?
-                </h3>
-                <p className="text-lg text-gray-600 mb-6">
-                  Мы сотрудничаем с лучшими питомниками и фермами. Оставьте
-                  заявку, и мы поможем найти конкретную породу или вид животного.
-                </p>
-                <a href="/application">
-                  <button className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
-                    Оставить заявку на поиск
-                  </button>
-                </a>
-              </div>
-              <div className="w-full md:w-1/3 bg-indigo-50 rounded-2xl p-6 text-center">
-                <p className="text-indigo-900 font-bold text-lg mb-2">
-                  Горячая линия
-                </p>
-                <p className="text-3xl font-extrabold text-indigo-600">
-                  +7 (777) 123-45-67
-                </p>
-                <p className="text-sm text-indigo-400 mt-2">
-                  Ежедневно с 9:00 до 21:00
-                </p>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="animate-fade-in">
             <button
               onClick={() => setSelectedCategory(null)}
               className="flex items-center text-indigo-600 hover:text-indigo-800 font-medium mb-8 transition-colors"
