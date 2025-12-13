@@ -61,7 +61,7 @@ export default function LocationPage() {
                     </div>
                 </div>
                 
-                {/* ВСТАВЛЕННАЯ КАРТА */}
+                {/* ВСТАВЛЕННА КАРТА */}
                 <div className="mt-10">
                     <h2 className="text-2xl font-bold mb-4 text-gray-900">Расположение на карте</h2>
                     <div className="w-full h-96 rounded-xl overflow-hidden shadow-xl border border-gray-200">
