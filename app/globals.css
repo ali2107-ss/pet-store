@@ -23,3 +23,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+@keyframes fly-to-top-right {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(600%, -600%) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.animate-fly-to-top-right {
+  animation: fly-to-top-right 0.8s ease-out forwards;
+}
