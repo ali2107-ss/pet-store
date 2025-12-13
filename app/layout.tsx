@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header";
 import { CartProvider } from "../context/CartContext";
+import { FavoritesProvider } from "../context/FavoritesContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,9 +25,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
         {/* === ОСНОВНОЕ СОДЕРЖИМОЕ === */}
         <main className="container mx-auto px-4 py-8 min-h-[calc(100vh-250px)]">
-          <CartProvider>
-            {children}
-          </CartProvider>
+          <FavoritesProvider>
+            <CartProvider>
+              {children}
+            </CartProvider>
+          </FavoritesProvider>
         </main>
 
         {/* === ПОДВАЛ === */}

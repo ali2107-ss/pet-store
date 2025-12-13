@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { ArrowLeft, Heart, MapPin, ShoppingCart, Search } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useFavorites } from '@/context/FavoritesContext';
 
 interface Category {
   id: string;
@@ -77,6 +78,7 @@ export default function AnimalsClient({ categories, initialAnimals }: AnimalsCli
   const [filteredAnimals, setFilteredAnimals] = useState<Animal[]>(animalsToUse);
   const [addedItemId, setAddedItemId] = useState<number | null>(null);
   const { addToCart } = useCart();
+  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
 
   const selectCategory = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -105,7 +107,21 @@ export default function AnimalsClient({ categories, initialAnimals }: AnimalsCli
   // Анимация корзины
   setFlyCart(true);
   setTimeout(() => setFlyCart(false), 800);
-};
+  };
+
+  const handleToggleFavorite = (animal: Animal) => {
+    if (isFavorite(animal.id)) {
+      removeFromFavorites(animal.id);
+    } else {
+      addToFavorites({
+        id: animal.id,
+        title: animal.title,
+        price: animal.price,
+        image: animal.image,
+        category: animal.category,
+      });
+    }
+  };
 
   return (
   <div className="min-h-screen bg-gray-50 py-10">
@@ -219,11 +235,12 @@ export default function AnimalsClient({ categories, initialAnimals }: AnimalsCli
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <button
-                      aria-label={`Добавить "${animal.title}" в избранное`}
-                      title={`Добавить "${animal.title}" в избранное`}
-                      className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-500 hover:text-red-500 hover:bg-white transition-all"
+                      onClick={() => handleToggleFavorite(animal)}
+                      aria-label={isFavorite(animal.id) ? `Убрать "${animal.title}" из избранного` : `Добавить "${animal.title}" в избранное`}
+                      title={isFavorite(animal.id) ? `Убрать "${animal.title}" из избранного` : `Добавить "${animal.title}" в избранное`}
+                      className={`absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all ${isFavorite(animal.id) ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
                     >
-                      <Heart className="w-5 h-5" />
+                      <Heart className="w-5 h-5" fill={isFavorite(animal.id) ? "currentColor" : "none"} />
                     </button>
                     <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-md text-white text-xs px-2 py-1 rounded flex items-center">
                       <MapPin className="w-3 h-3 mr-1" /> {animal.location}
