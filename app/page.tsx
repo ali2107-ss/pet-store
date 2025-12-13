@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { ShoppingCart, ArrowRight, Star, Tag, Truck, ShieldCheck, Heart } from "lucide-react";
+import Link from "next/link";
+import { ShoppingCart, ArrowRight, Heart, Truck, ShieldCheck, Tag } from "lucide-react";
 
 // Типы
 interface Category {
@@ -26,7 +27,10 @@ interface Feature {
 
 // Компонент карточки категории
 const CategoryCard: React.FC<Category> = ({ title, image }) => (
-  <div className="group relative overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 cursor-pointer">
+  <Link
+    href="/animals"
+    className="group relative overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 cursor-pointer"
+  >
     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 z-10 opacity-60 group-hover:opacity-40 transition-opacity" />
     <img
       src={image}
@@ -39,7 +43,7 @@ const CategoryCard: React.FC<Category> = ({ title, image }) => (
         Перейти <ArrowRight className="w-4 h-4 ml-2" />
       </div>
     </div>
-  </div>
+  </Link>
 );
 
 // Компонент карточки "Хит продаж"
@@ -147,52 +151,47 @@ const HomePage: React.FC = () => {
               </div>
             </div>
           </div>
-            {/* === КАТЕГОРИИ === */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Популярные категории</h2>
-                    <p className="text-gray-500 max-w-2xl mx-auto">Найдите именно то, что нужно вашему пушистому (или пернатому) другу.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {categories.map(cat => (
-                        <CategoryCard key={cat.title} {...cat} />
-                    ))}
-                </div>
-            </section>
 
-           
+          {/* === КАТЕГОРИИ === */}
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Популярные категории</h2>
+              <p className="text-gray-500 max-w-2xl mx-auto">Найдите именно то, что нужно вашему пушистому (или пернатому) другу.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {categories.map(cat => (
+                <CategoryCard key={cat.title} {...cat} />
+              ))}
+            </div>
+          </section>
 
-            {/* === АКЦИЯ (БАННЕР ВНИЗУ) */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-8 md:p-16 text-center md:text-left relative overflow-hidden shadow-2xl">
-                    {/* Декор фона */}
-                    <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
-                    <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
-                    
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between">
-                        <div className="max-w-xl mb-8 md:mb-0">
-                            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6">
-                                Скидка 15% <br/> на первый заказ!
-                            </h2>
-                            <p className="text-indigo-100 text-lg mb-8">
-                                Зарегистрируйтесь сегодня и используйте промокод <span className="bg-white/20 px-2 py-1 rounded font-mono font-bold text-white">HAPPYPETS</span> при оформлении.
-                            </p>
-                            <a href="/login" className="inline-block px-8 py-4 bg-white text-indigo-600 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-lg">
-                                Получить скидку
-                            </a>
-                        </div>
-                        {/* Декоративная картинка подарка */}
-                        <div className="w-48 md:w-64">
-                            
-                        </div>
-                    </div>
+          {/* === АКЦИЯ (БАННЕР ВНИЗУ) === */}
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-8 md:p-16 text-center md:text-left relative overflow-hidden shadow-2xl">
+              {/* Декор фона */}
+              <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
+
+              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between">
+                <div className="max-w-xl mb-8 md:mb-0">
+                  <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6">
+                    Скидка 15% <br /> на первый заказ!
+                  </h2>
+                  <p className="text-indigo-100 text-lg mb-8">
+                    Зарегистрируйтесь сегодня и используйте промокод <span className="bg-white/20 px-2 py-1 rounded font-mono font-bold text-white">HAPPYPETS</span> при оформлении.
+                  </p>
+                  <a href="/login" className="inline-block px-8 py-4 bg-white text-indigo-600 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-lg">
+                    Получить скидку
+                  </a>
                 </div>
-            </section>
+                {/* Декоративная картинка подарка */}
+                <div className="w-48 md:w-64"></div>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
-      </div>
-
-
+    </div>
   );
 };
 
