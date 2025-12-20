@@ -18,16 +18,16 @@ interface Product {
 }
 
 // --- СПИСОК ТОВАРОВ (fallback) ---
-const staticProducts: Product[] = [
-  { id: 1, name: 'Сухой корм для собак', price: 6000, category: 'Еда', image: 'korm.jpg', rating: 4.5, description: 'Полнорационный, сбалансированный сухой корм премиум-класса, обогащенный витаминами и минералами для поддержания здоровья и активности вашей собаки.', stock: 50 },
-  { id: 2, name: 'Мягкая игрушка "Мышка"', price: 1750, category: 'Игрушки', image: 'igrushka.jpg', rating: 4.0, description: 'Безопасная и мягкая игрушка для кошек, изготовленная из экологически чистых материалов. Идеальна для охоты и игр.', stock: 15 },
-  { id: 3, name: 'Когтеточка "Башня"', price: 6450, category: 'Аксессуары', image: 'kogtetochka.jpg', rating: 4.3, description: 'Высокая многоуровневая когтеточка-башня. Помогает сохранить мебель и обеспечить кошке место для лазания и отдыха.', stock: 5 },
-  { id: 4, name: 'Шампунь для кошек', price: 2250, category: 'Здоровье', image: 'shampun.jpg', rating: 4.1, description: 'Гипоаллергенный шампунь с натуральными экстрактами для бережного ухода за шерстью кошек. Придает блеск и приятный аромат.', stock: 22 },
-  { id: 5, name: 'Большой лоток для кошек', price: 4750, category: 'Гигиена', image: 'lotok.jpg', rating: 4.2, description: 'Просторный закрытый лоток с угольным фильтром. Идеально подходит для больших кошек и обеспечивает максимальную гигиену.', stock: 8 },
-  { id: 6, name: 'Наполнитель (5 кг)', price: 2000, category: 'Гигиена', image: 'napolnitel.jpg', rating: 4.6, description: 'Комкующийся бентонитовый наполнитель с высокой абсорбирующей способностью. Устраняет неприятные запахи.', stock: 40 },
-  { id: 7, name: 'Ошейник со светлячком', price: 2950, category: 'Аксессуары', image: 'osheinik.jpg', rating: 4.1, description: 'Светящийся в темноте ошейник для собак, обеспечивающий безопасность во время вечерних прогулок. Регулируемый размер.', stock: 18 },
-  { id: 8, name: 'Влажный корм для взрослых котов', price: 7500, category: 'Еда', image: 'vlazhniykorm.jpg', rating: 4.9, description: 'Набор из 20 паучей с разными вкусами. Сбалансированный влажный корм с высоким содержанием мяса для здоровья мочевыводящей системы.', stock: 30 },
-];
+// const staticProducts: Product[] = [
+//   { id: 1, name: 'Сухой корм для собак', price: 6000, category: 'Еда', image: 'korm.jpg', rating: 4.5, description: 'Полнорационный, сбалансированный сухой корм премиум-класса, обогащенный витаминами и минералами для поддержания здоровья и активности вашей собаки.', stock: 50 },
+//   { id: 2, name: 'Мягкая игрушка "Мышка"', price: 1750, category: 'Игрушки', image: 'igrushka.jpg', rating: 4.0, description: 'Безопасная и мягкая игрушка для кошек, изготовленная из экологически чистых материалов. Идеальна для охоты и игр.', stock: 15 },
+//   { id: 3, name: 'Когтеточка "Башня"', price: 6450, category: 'Аксессуары', image: 'kogtetochka.jpg', rating: 4.3, description: 'Высокая многоуровневая когтеточка-башня. Помогает сохранить мебель и обеспечить кошке место для лазания и отдыха.', stock: 5 },
+//   { id: 4, name: 'Шампунь для кошек', price: 2250, category: 'Здоровье', image: 'shampun.jpg', rating: 4.1, description: 'Гипоаллергенный шампунь с натуральными экстрактами для бережного ухода за шерстью кошек. Придает блеск и приятный аромат.', stock: 22 },
+//   { id: 5, name: 'Большой лоток для кошек', price: 4750, category: 'Гигиена', image: 'lotok.jpg', rating: 4.2, description: 'Просторный закрытый лоток с угольным фильтром. Идеально подходит для больших кошек и обеспечивает максимальную гигиену.', stock: 8 },
+//   { id: 6, name: 'Наполнитель (5 кг)', price: 2000, category: 'Гигиена', image: 'napolnitel.jpg', rating: 4.6, description: 'Комкующийся бентонитовый наполнитель с высокой абсорбирующей способностью. Устраняет неприятные запахи.', stock: 40 },
+//   { id: 7, name: 'Ошейник со светлячком', price: 2950, category: 'Аксессуары', image: 'osheinik.jpg', rating: 4.1, description: 'Светящийся в темноте ошейник для собак, обеспечивающий безопасность во время вечерних прогулок. Регулируемый размер.', stock: 18 },
+//   { id: 8, name: 'Влажный корм для взрослых котов', price: 7500, category: 'Еда', image: 'vlazhniykorm.jpg', rating: 4.9, description: 'Набор из 20 паучей с разными вкусами. Сбалансированный влажный корм с высоким содержанием мяса для здоровья мочевыводящей системы.', stock: 30 },
+// ];
 
 interface ShopPageProps {
   initialProducts?: Product[];
@@ -156,7 +156,8 @@ const ProductCard = ({ product, onAddToCart, onOpenDetails, triggerAnimation, on
 // --- Главный компонент магазина ---
 
 const ShopPage = ({ initialProducts }: ShopPageProps) => {
-  const productsToUse = initialProducts && initialProducts.length > 0 ? initialProducts : staticProducts;
+  const productsToUse = initialProducts ;
+  // const productsToUse = initialProducts && initialProducts.length > 0 ? initialProducts : staticProducts;
   const [selectedCategory, setSelectedCategory] = useState('Все категории');
   const [searchTerm, setSearchTerm] = useState('');
   
