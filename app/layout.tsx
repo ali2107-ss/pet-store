@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "../components/Header";
 import { CartProvider } from "../context/CartContext";
 import { FavoritesProvider } from "../context/FavoritesContext";
+import { OrdersProvider } from "../context/OrdersContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,17 +21,19 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="ru" className="scroll-smooth">
       <body className={`${inter.className} bg-gray-100 text-gray-900 antialiased`}>
 
-        {/* === ШАПКА САЙТА === */}
-        <Header />
+        <FavoritesProvider>
+          <CartProvider>
+            <OrdersProvider>
+              {/* === ШАПКА САЙТА === */}
+              <Header />
 
-        {/* === ОСНОВНОЕ СОДЕРЖИМОЕ === */}
-        <main className="container mx-auto px-4 py-8 min-h-[calc(100vh-250px)]">
-          <FavoritesProvider>
-            <CartProvider>
-              {children}
-            </CartProvider>
-          </FavoritesProvider>
-        </main>
+              {/* === ОСНОВНОЕ СОДЕРЖИМОЕ === */}
+              <main className="container mx-auto px-4 py-8 min-h-[calc(100vh-250px)]">
+                {children}
+              </main>
+            </OrdersProvider>
+          </CartProvider>
+        </FavoritesProvider>
 
         {/* === ПОДВАЛ === */}
         <footer className="bg-gray-800 text-gray-300 mt-16">

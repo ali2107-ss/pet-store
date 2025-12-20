@@ -156,7 +156,7 @@ const ProductCard = ({ product, onAddToCart, onOpenDetails, triggerAnimation, on
 // --- Главный компонент магазина ---
 
 const ShopPage = ({ initialProducts }: ShopPageProps) => {
-  const productsToUse = initialProducts ;
+  const productsToUse = initialProducts ?? [];
   // const productsToUse = initialProducts && initialProducts.length > 0 ? initialProducts : staticProducts;
   const [selectedCategory, setSelectedCategory] = useState('Все категории');
   const [searchTerm, setSearchTerm] = useState('');
