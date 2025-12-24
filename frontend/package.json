@@ -29,7 +29,7 @@
   "main": "next.config.js",
   "repository": {
     "type": "git",
-    "url": "git+https://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@github.com/ali2107-ss/pet-store.git"
+    "url": "https://github.com/ali2107-ss/pet-store.git"
   },
   "keywords": [],
   "author": "",
