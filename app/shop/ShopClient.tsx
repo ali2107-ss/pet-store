@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { ShoppingCart, Heart, Search, Home, DollarSign, Package, X } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
-import { useFavorites } from '@/context/FavoritesContext';
+import { ShoppingCart, Heart, Search, Home, DollarSign, Package, X, ArrowUpDown } from 'lucide-react';
 
 // --- ИНТЕРФЕЙС PRODUCT ---
 interface Product {
@@ -15,23 +13,16 @@ interface Product {
   rating: number;
   description: string;
   stock: number;
+  createdAt: number; // Таймстемп для сортировки "Новинки"
 }
 
-// --- СПИСОК ТОВАРОВ (fallback) ---
-// const staticProducts: Product[] = [
-//   { id: 1, name: 'Сухой корм для собак', price: 6000, category: 'Еда', image: 'korm.jpg', rating: 4.5, description: 'Полнорационный, сбалансированный сухой корм премиум-класса, обогащенный витаминами и минералами для поддержания здоровья и активности вашей собаки.', stock: 50 },
-//   { id: 2, name: 'Мягкая игрушка "Мышка"', price: 1750, category: 'Игрушки', image: 'igrushka.jpg', rating: 4.0, description: 'Безопасная и мягкая игрушка для кошек, изготовленная из экологически чистых материалов. Идеальна для охоты и игр.', stock: 15 },
-//   { id: 3, name: 'Когтеточка "Башня"', price: 6450, category: 'Аксессуары', image: 'kogtetochka.jpg', rating: 4.3, description: 'Высокая многоуровневая когтеточка-башня. Помогает сохранить мебель и обеспечить кошке место для лазания и отдыха.', stock: 5 },
-//   { id: 4, name: 'Шампунь для кошек', price: 2250, category: 'Здоровье', image: 'shampun.jpg', rating: 4.1, description: 'Гипоаллергенный шампунь с натуральными экстрактами для бережного ухода за шерстью кошек. Придает блеск и приятный аромат.', stock: 22 },
-//   { id: 5, name: 'Большой лоток для кошек', price: 4750, category: 'Гигиена', image: 'lotok.jpg', rating: 4.2, description: 'Просторный закрытый лоток с угольным фильтром. Идеально подходит для больших кошек и обеспечивает максимальную гигиену.', stock: 8 },
-//   { id: 6, name: 'Наполнитель (5 кг)', price: 2000, category: 'Гигиена', image: 'napolnitel.jpg', rating: 4.6, description: 'Комкующийся бентонитовый наполнитель с высокой абсорбирующей способностью. Устраняет неприятные запахи.', stock: 40 },
-//   { id: 7, name: 'Ошейник со светлячком', price: 2950, category: 'Аксессуары', image: 'osheinik.jpg', rating: 4.1, description: 'Светящийся в темноте ошейник для собак, обеспечивающий безопасность во время вечерних прогулок. Регулируемый размер.', stock: 18 },
-//   { id: 8, name: 'Влажный корм для взрослых котов', price: 7500, category: 'Еда', image: 'vlazhniykorm.jpg', rating: 4.9, description: 'Набор из 20 паучей с разными вкусами. Сбалансированный влажный корм с высоким содержанием мяса для здоровья мочевыводящей системы.', stock: 30 },
-// ];
-
-interface ShopPageProps {
-  initialProducts?: Product[];
-}
+// Контексты (заглушки для автономности примера, если нет внешних)
+const useCart = () => ({ addToCart: (p: any) => console.log('Added to cart', p) });
+const useFavorites = () => ({ 
+  addToFavorites: (p: any) => {}, 
+  removeFromFavorites: (id: any) => {}, 
+  isFavorite: (id: any) => false 
+});
 
 // --- ВСПОМОГАТЕЛЬНЫЕ КОМПОНЕНТЫ ---
 
@@ -48,13 +39,10 @@ const RatingStars = ({ rating }: { rating: number }) => {
   return <div className="flex text-sm space-x-0.5">{stars}</div>;
 };
 
-// --- КОМПОНЕНТ ДЕТАЛЕЙ ТОВАРА (ОБНОВЛЕННЫЙ) ---
-
 const ProductDetailModal = ({ product, onClose, onAddToCart }: { product: Product, onClose: () => void, onAddToCart: (product: Product) => void }) => {
   const stockColor = product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-yellow-600' : 'text-red-600';
 
   return (
-    // ИЗМЕНЕНИЕ: Заменен bg-black bg-opacity-40 на bg-white bg-opacity-90
     <div className="fixed inset-0 bg-white bg-opacity-90 flex justify-center items-center z-[100] p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col transform transition-all">
         <div className="p-8 overflow-y-auto flex-grow relative">
@@ -63,7 +51,7 @@ const ProductDetailModal = ({ product, onClose, onAddToCart }: { product: Produc
           <div className="grid md:grid-cols-2 gap-8">
             <div className="md:col-span-1">
               <img
-                src={`/${product.image}`}
+                src={product.image}
                 alt={product.name}
                 className="w-full h-auto object-cover rounded-lg shadow-lg"
                 onError={(e: any) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://placehold.co/600x450/E5E7EB/4B5563?text=Нет+Фото"; }}
@@ -106,31 +94,27 @@ const ProductDetailModal = ({ product, onClose, onAddToCart }: { product: Produc
   );
 };
 
-// --- ProductCard ---
-
-const ProductCard = ({ product, onAddToCart, onOpenDetails, triggerAnimation, onToggleFavorite, isFavorite }: { product: Product, onAddToCart: (product: Product) => void, onOpenDetails: (product: Product) => void, triggerAnimation: () => void, onToggleFavorite: (product: Product) => void, isFavorite: boolean }) => (
+const ProductCard = ({ product, onAddToCart, onOpenDetails, triggerAnimation, onToggleFavorite, isFavorite }: any) => (
   <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col">
     <div className="relative h-48 overflow-hidden">
       <img
-        src={`/${product.image}`}
+        src={product.image}
         alt={product.name}
         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         onError={(e: any) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://placehold.co/400x300/E5E7EB/4B5563?text=Нет+Фото"; }}
       />
       <button 
         onClick={() => onToggleFavorite(product)}
-        title={isFavorite ? "Убрать из избранного" : "Добавить в избранное"} 
-        className={`absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition transform hover:scale-110 ${isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+        className={`absolute top-3 right-3 p-2 bg-white rounded-full shadow-md transition transform hover:scale-110 ${isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
       >
         <Heart className="w-5 h-5" fill={isFavorite ? "currentColor" : "none"} />
       </button>
     </div>
     <div className="p-4 flex flex-col flex-grow">
       <span className="text-xs font-semibold text-indigo-600 mb-1 uppercase">{product.category}</span>
-      {/* Сделали заголовок кликабельным */}
       <h3 
         className="text-lg font-bold text-gray-900 mb-2 flex-grow hover:text-indigo-600 transition duration-150 cursor-pointer"
-        onClick={() => onOpenDetails(product)} // Открываем модальное окно при клике
+        onClick={() => onOpenDetails(product)}
       >
         {product.name}
       </h3>
@@ -141,7 +125,7 @@ const ProductCard = ({ product, onAddToCart, onOpenDetails, triggerAnimation, on
       <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
         <p className="text-2xl font-extrabold text-indigo-700">{product.price} ₸</p> 
         <button 
-          className={`flex items-center text-white px-4 py-2 rounded-full text-sm font-semibold transition duration-150 shadow-lg shadow-green-300/50 transform hover:translate-y-[-1px] ${product.stock > 0 ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}`}
+          className={`flex items-center text-white px-4 py-2 rounded-full text-sm font-semibold transition duration-150 shadow-lg transform hover:translate-y-[-1px] ${product.stock > 0 ? 'bg-green-600 hover:bg-green-700 shadow-green-300/50' : 'bg-gray-400 cursor-not-allowed'}`}
           onClick={() => { if (product.stock > 0) { onAddToCart(product); triggerAnimation(); } }}
           disabled={product.stock === 0}
         >
@@ -153,18 +137,23 @@ const ProductCard = ({ product, onAddToCart, onOpenDetails, triggerAnimation, on
   </div>
 );
 
-// --- Главный компонент магазина ---
+const ShopPage = ({ initialProducts }: { initialProducts?: Product[] }) => {
+  // Статические данные для демонстрации
+  const staticProducts: Product[] = [
+    { id: 1, name: 'Сухой корм для собак', price: 6000, category: 'Еда', image: 'https://images.unsplash.com/photo-1585837505264-184856f61701?q=80&w=400&auto=format&fit=crop', rating: 4.5, description: 'Корм премиум-класса.', stock: 50, createdAt: 1704067200000 },
+    { id: 2, name: 'Мягкая игрушка "Мышка"', price: 1750, category: 'Игрушки', image: 'https://images.unsplash.com/photo-1548546738-8509cb246ed3?q=80&w=400&auto=format&fit=crop', rating: 4.0, description: 'Для кошек.', stock: 15, createdAt: 1712121200000 },
+    { id: 3, name: 'Когтеточка "Башня"', price: 6450, category: 'Аксессуары', image: 'https://images.unsplash.com/photo-1545249390-6bdfa286032f?q=80&w=400&auto=format&fit=crop', rating: 4.8, description: 'Высокая башня.', stock: 5, createdAt: 1730000000000 },
+    { id: 4, name: 'Шампунь для кошек', price: 2250, category: 'Здоровье', image: 'https://images.unsplash.com/photo-1516733725897-1aa73b87c8e8?q=80&w=400&auto=format&fit=crop', rating: 4.1, description: 'Бережный уход.', stock: 22, createdAt: 1725000000000 },
+  ];
 
-const ShopPage = ({ initialProducts }: ShopPageProps) => {
-  const productsToUse = initialProducts ?? [];
-  // const productsToUse = initialProducts && initialProducts.length > 0 ? initialProducts : staticProducts;
+  const productsToUse = initialProducts && initialProducts.length > 0 ? initialProducts : staticProducts;
+  
+  // Состояния фильтров
   const [selectedCategory, setSelectedCategory] = useState('Все категории');
+  const [sortBy, setSortBy] = useState('newest'); // 'cheap', 'expensive', 'rating', 'newest'
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Состояние для деталей товара
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
-  // Анимация корзины
   const [flyCart, setFlyCart] = useState(false);
 
   const { addToCart } = useCart();
@@ -175,12 +164,41 @@ const ShopPage = ({ initialProducts }: ShopPageProps) => {
     return ['Все категории', ...Array.from(uniqueCategories)].sort();
   }, [productsToUse]);
 
-  const filteredProducts = useMemo(() => {
-    let currentProducts = productsToUse;
-    if (selectedCategory !== 'Все категории') currentProducts = currentProducts.filter(p => p.category === selectedCategory);
-    if (searchTerm) currentProducts = currentProducts.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.category.toLowerCase().includes(searchTerm.toLowerCase()));
-    return currentProducts;
-  }, [selectedCategory, searchTerm, productsToUse]);
+  // КОМПЛЕКСНАЯ ФИЛЬТРАЦИЯ И СОРТИРОВКА
+  const processedProducts = useMemo(() => {
+    let result = [...productsToUse];
+
+    // 1. Поиск
+    if (searchTerm) {
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        p.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // 2. Категория
+    if (selectedCategory !== 'Все категории') {
+      result = result.filter(p => p.category === selectedCategory);
+    }
+
+    // 3. Сортировка
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'cheap':
+          return a.price - b.price;
+        case 'expensive':
+          return b.price - a.price;
+        case 'rating':
+          return b.rating - a.rating;
+        case 'newest':
+          return b.createdAt - a.createdAt;
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [selectedCategory, sortBy, searchTerm, productsToUse]);
 
   const handleAddToCart = (product: Product) => {
     addToCart({
@@ -197,87 +215,91 @@ const ShopPage = ({ initialProducts }: ShopPageProps) => {
     if (isFavorite(product.id)) {
       removeFromFavorites(product.id);
     } else {
-      addToFavorites({
-        id: product.id,
-        title: product.name,
-        price: `${product.price}`,
-        image: product.image,
-        category: product.category,
-      });
+      addToFavorites(product);
     }
   };
 
-  const triggerAnimation = () => {
-    setFlyCart(true);
-    setTimeout(() => setFlyCart(false), 600);
-  };
-  
-  // Функции для модального окна деталей
-  const handleOpenDetails = (product: Product) => {
-    setSelectedProduct(product);
-  };
-
-  const handleCloseDetails = () => {
-    setSelectedProduct(null);
-  };
-
-
   return (
-    <div className="bg-gray-50 min-h-screen font-sans relative">
-        {/* Анимация «летящей» корзины */}
-        {flyCart && (
-          <div className="fixed w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-fly-to-top-right z-50">
-            <ShoppingCart className="w-5 h-5"/>
-          </div>
-        )}
+    <div className="bg-gray-50 min-h-screen font-sans relative pb-20">
+      {flyCart && (
+        <div className="fixed w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-fly-to-top-right z-50">
+          <ShoppingCart className="w-5 h-5"/>
+        </div>
+      )}
 
-      
-
-      <main className="min-h-[80vh] py-10">
+      <main className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-extrabold text-gray-900 mb-12 text-center flex items-center justify-center">
             <Home className="w-10 h-10 mr-4 text-indigo-600"/>
             Наш Зоомагазин
           </h1>
 
-          <div className="mb-12 bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-grow">
-                {/* ИЗМЕНЕНИЕ: Добавлен класс text-gray-900 для черного текста в поле ввода */}
+          {/* ПАНЕЛЬ ФИЛЬТРОВ И СОРТИРОВКИ */}
+          <div className="mb-8 bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+            <div className="flex flex-col gap-6">
+              {/* Поиск */}
+              <div className="relative w-full">
                 <input 
                   type="text" 
-                  placeholder="Поиск товаров..." 
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm text-gray-900" 
+                  placeholder="Поиск по названию или описанию..." 
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-gray-900 placeholder-gray-400" 
                   value={searchTerm} 
                   onChange={(e) => setSearchTerm(e.target.value)} 
                 />
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
-              {/* ИЗМЕНЕНИЕ: Добавлен класс text-gray-900 для черного текста в селекте */}
-              <select 
-                aria-label="Фильтр по категориям" 
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 md:w-1/4 transition shadow-sm text-gray-900" 
-                value={selectedCategory} 
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {categories.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+
+              {/* Селекторы */}
+              <div className="flex flex-col md:flex-row gap-4">
+                {/* Категории */}
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Категория</label>
+                  <select 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-gray-900 transition" 
+                    value={selectedCategory} 
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+
+                {/* Сортировка (НОВОЕ) */}
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Сортировать по</label>
+                  <div className="relative">
+                    <select 
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-gray-900 appearance-none transition" 
+                      value={sortBy} 
+                      onChange={(e) => setSortBy(e.target.value)}
+                    >
+                      <option value="newest">Новинки</option>
+                      <option value="cheap">Сначала дешевые</option>
+                      <option value="expensive">Сначало дорогие</option>
+                      <option value="rating">Высокий рейтинг</option>
+                    </select>
+                    <ArrowUpDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
             </div>
-            {filteredProducts.length === 0 && (
-              <p className="mt-4 text-center text-lg text-red-500 font-medium">
-                Товары по выбранным фильтрам не найдены.
-              </p>
+
+            {processedProducts.length === 0 && (
+              <div className="mt-8 text-center py-10">
+                <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-xl text-gray-500">Ничего не нашли. Попробуйте изменить параметры поиска.</p>
+              </div>
             )}
           </div>
 
+          {/* СЕТКА ТОВАРОВ */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {filteredProducts.map(product => (
+            {processedProducts.map(product => (
               <ProductCard 
                 key={product.id} 
                 product={product} 
                 onAddToCart={handleAddToCart} 
-                triggerAnimation={triggerAnimation}
-                onOpenDetails={handleOpenDetails}
+                triggerAnimation={() => { setFlyCart(true); setTimeout(() => setFlyCart(false), 600); }}
+                onOpenDetails={setSelectedProduct}
                 onToggleFavorite={handleToggleFavorite}
                 isFavorite={isFavorite(product.id)}
               />
@@ -286,20 +308,18 @@ const ShopPage = ({ initialProducts }: ShopPageProps) => {
         </div>
       </main>
 
-      {/* Модальное окно деталей товара */}
       {selectedProduct && (
         <ProductDetailModal 
           product={selectedProduct} 
-          onClose={handleCloseDetails} 
+          onClose={() => setSelectedProduct(null)} 
           onAddToCart={handleAddToCart} 
         />
       )}
 
-      {/* Анимация CSS */}
       <style jsx>{`
         @keyframes fly-to-top-right {
           0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-          100% { transform: translate(calc(50vw - 40px), -40px) scale(0.3); opacity: 0; }
+          100% { transform: translate(calc(50vw - 40px), -50vh) scale(0.3); opacity: 0; }
         }
         .animate-fly-to-top-right {
           animation: fly-to-top-right 0.6s ease-in-out forwards;

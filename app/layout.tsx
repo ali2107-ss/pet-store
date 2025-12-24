@@ -69,8 +69,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 Мы в соцсетях
               </h4>
               <div className="flex space-x-4">
-                <a href="#" className="hover:text-white">VK</a>
-                <a href="#" className="hover:text-white">Telegram</a>
+                <a href="https://www.instagram.com/pet_store_akmol?igsh=cmdjMm9kczR4eXR2" className="hover:text-white">Instagram</a>
+                <a href="https://t.me/Pet_store7" className="hover:text-white">Telegram</a>
               </div>
             </div>
           </div>
