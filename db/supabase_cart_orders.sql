@@ -40,35 +40,43 @@ CREATE TABLE IF NOT EXISTS favorites (
 );
 CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
 
-ALTER TABLE favorites
-  DROP CONSTRAINT IF EXISTS fk_favorites_user_profiles;
-ALTER TABLE favorites
-  ADD CONSTRAINT fk_favorites_user_profiles FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
-
 -- Связи с существующими таблицами (profiles, products)
 -- Удаляем старые ограничения, если они есть, затем добавляем внешние ключи
-ALTER TABLE carts
-  DROP CONSTRAINT IF EXISTS fk_carts_user_profiles;
-ALTER TABLE carts
-  ADD CONSTRAINT fk_carts_user_profiles FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'carts') THEN
+        ALTER TABLE carts DROP CONSTRAINT IF EXISTS fk_carts_user_profiles;
+        ALTER TABLE carts ADD CONSTRAINT fk_carts_user_profiles FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
+    END IF;
 
-ALTER TABLE orders
-  DROP CONSTRAINT IF EXISTS fk_orders_user_profiles;
-ALTER TABLE orders
-  ADD CONSTRAINT fk_orders_user_profiles FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE SET NULL;
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'orders') THEN
+        ALTER TABLE orders DROP CONSTRAINT IF EXISTS fk_orders_user_profiles;
+        ALTER TABLE orders ADD CONSTRAINT fk_orders_user_profiles FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE SET NULL;
+    END IF;
 
-ALTER TABLE order_items
-  DROP CONSTRAINT IF EXISTS fk_order_items_product_products;
-ALTER TABLE order_items
-  ADD CONSTRAINT fk_order_items_product_products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL;
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'order_items') THEN
+        ALTER TABLE order_items DROP CONSTRAINT IF EXISTS fk_order_items_product_products;
+        ALTER TABLE order_items ADD CONSTRAINT fk_order_items_product_products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'favorites') THEN
+        ALTER TABLE favorites DROP CONSTRAINT IF EXISTS fk_favorites_user_profiles;
+        ALTER TABLE favorites ADD CONSTRAINT fk_favorites_user_profiles FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 -- Включаем RLS для favorites и создаём политику
-ALTER TABLE IF EXISTS favorites ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "users_manage_own_favorites" ON favorites;
-CREATE POLICY "users_manage_own_favorites"
-  ON favorites
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'favorites') THEN
+        ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "users_manage_own_favorites" ON favorites;
+        CREATE POLICY "users_manage_own_favorites"
+          ON favorites
+          USING (auth.uid() = user_id)
+          WITH CHECK (auth.uid() = user_id);
+    END IF;
+END $$;
 
 
 -- Пример RLS (Row Level Security).
@@ -76,41 +84,45 @@ CREATE POLICY "users_manage_own_favorites"
 -- и что вы используете Supabase Auth. Проверьте соответствие с вашей схемой.
 
 -- Включаем RLS
-ALTER TABLE IF EXISTS carts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS order_items ENABLE ROW LEVEL SECURITY;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'carts') THEN
+        ALTER TABLE carts ENABLE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "users_manage_own_cart" ON carts;
+        CREATE POLICY "users_manage_own_cart"
+          ON carts
+          USING (auth.uid() = user_id)
+          WITH CHECK (auth.uid() = user_id);
+    END IF;
 
--- Политика: пользователь может читать/заменять свою корзину
-DROP POLICY IF EXISTS "users_manage_own_cart" ON carts;
-CREATE POLICY "users_manage_own_cart"
-  ON carts
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'orders') THEN
+        ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "users_select_own_orders" ON orders;
+        CREATE POLICY "users_select_own_orders"
+          ON orders
+          FOR SELECT
+          USING (auth.uid() = user_id);
 
--- Политика: пользователь видит свои заказы
-DROP POLICY IF EXISTS "users_select_own_orders" ON orders;
-CREATE POLICY "users_select_own_orders"
-  ON orders
-  FOR SELECT
-  USING (auth.uid() = user_id);
+        DROP POLICY IF EXISTS "users_insert_own_orders" ON orders;
+        CREATE POLICY "users_insert_own_orders"
+          ON orders
+          FOR INSERT
+          WITH CHECK (auth.uid() = user_id);
+    END IF;
 
--- Политика: при создании заказа — пользователь создает запись с своим user_id
-DROP POLICY IF EXISTS "users_insert_own_orders" ON orders;
-CREATE POLICY "users_insert_own_orders"
-  ON orders
-  FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
--- Политики для order_items (чтение связанных позиций заказов)
-DROP POLICY IF EXISTS "users_select_order_items_via_order" ON order_items;
-CREATE POLICY "users_select_order_items_via_order"
-  ON order_items
-  FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM orders WHERE orders.id = order_items.order_id AND orders.user_id = auth.uid()
-    )
-  );
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'order_items') THEN
+        ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "users_select_order_items_via_order" ON order_items;
+        CREATE POLICY "users_select_order_items_via_order"
+          ON order_items
+          FOR SELECT
+          USING (
+            EXISTS (
+              SELECT 1 FROM orders WHERE orders.id = order_items.order_id AND orders.user_id = auth.uid()
+            )
+          );
+    END IF;
+END $$;
 
 -- Примечание:
 -- 1) Для операций, которые выполняются сервером (API с service role key),
@@ -121,7 +133,62 @@ CREATE POLICY "users_select_order_items_via_order"
 --    не передавайте user_id в теле и вместо этого проверяйте session через
 --    Supabase клиент на сервере (recommended) или используйте JWT.
 
--- Пример: добавить колонку updated_by если нужно отслеживать кто обновил
--- ALTER TABLE carts ADD COLUMN IF NOT EXISTS updated_by uuid;
+-- 5) Таблица адресов доставки
+CREATE TABLE IF NOT EXISTS user_addresses (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id uuid NOT NULL,
+  name text NOT NULL, -- например, "Дом", "Работа"
+  address text NOT NULL,
+  city text,
+  postal_code text,
+  country text DEFAULT 'Казахстан',
+  is_default boolean DEFAULT false,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+-- 6) Таблица способов оплаты
+CREATE TABLE IF NOT EXISTS user_payment_methods (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id uuid NOT NULL,
+  type text NOT NULL, -- 'card', 'paypal', etc.
+  card_number_masked text, -- последние 4 цифры, например ****4242
+  card_brand text, -- Visa, Mastercard
+  expiry_month int,
+  expiry_year int,
+  is_default boolean DEFAULT false,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+-- Индексы для новых таблиц
+CREATE INDEX IF NOT EXISTS idx_user_addresses_user_id ON user_addresses(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_payment_methods_user_id ON user_payment_methods(user_id);
+
+-- Связи с profiles
+DO $$
+BEGIN
+    ALTER TABLE user_addresses DROP CONSTRAINT IF EXISTS fk_user_addresses_user_profiles;
+    ALTER TABLE user_addresses ADD CONSTRAINT fk_user_addresses_user_profiles FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
+
+    ALTER TABLE user_payment_methods DROP CONSTRAINT IF EXISTS fk_user_payment_methods_user_profiles;
+    ALTER TABLE user_payment_methods ADD CONSTRAINT fk_user_payment_methods_user_profiles FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
+END $$;
+
+-- RLS для user_addresses
+ALTER TABLE user_addresses ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "users_manage_own_addresses" ON user_addresses;
+CREATE POLICY "users_manage_own_addresses"
+  ON user_addresses
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- RLS для user_payment_methods
+ALTER TABLE user_payment_methods ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "users_manage_own_payment_methods" ON user_payment_methods;
+CREATE POLICY "users_manage_own_payment_methods"
+  ON user_payment_methods
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- Конец файла
