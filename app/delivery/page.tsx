@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MapPin, CreditCard, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import supabase from '@/lib/supabaseClient';
 
 interface DeliveryData {
   city: string;
@@ -12,6 +13,22 @@ interface DeliveryData {
   apartment: string;
   phone: string;
   paymentMethod: 'card' | 'cash' | '';
+}
+
+interface UserAddress {
+  id: number;
+  city: string;
+  address: string;
+  apartment?: string | null;
+  phone: string;
+  is_default?: boolean;
+}
+
+interface PaymentMethod {
+  id: number;
+  brand?: string | null;
+  card_number_masked?: string | null;
+  is_default?: boolean;
 }
 
 const DeliveryPaymentPage = () => {
@@ -25,6 +42,11 @@ const DeliveryPaymentPage = () => {
     phone: '',
     paymentMethod: '',
   });
+  const [addresses, setAddresses] = useState<UserAddress[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [useSavedAddress, setUseSavedAddress] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Загружаем сохранённые данные при монтировании
@@ -37,12 +59,43 @@ const DeliveryPaymentPage = () => {
         console.error('Ошибка при загрузке данных:', e);
       }
     }
+    // Загрузим сохранённые адреса и карты из Supabase (если настроен)
+    (async () => {
+      try {
+        const { data: addrs } = await supabase.from('user_addresses').select('*').order('is_default', { ascending: false });
+        if (addrs) setAddresses(addrs as UserAddress[]);
+      } catch (e) {
+        console.warn('Не удалось загрузить адреса:', e);
+      }
+      try {
+        const { data: cards } = await supabase.from('user_payment_methods').select('*').order('is_default', { ascending: false });
+        if (cards) setPaymentMethods(cards as PaymentMethod[]);
+      } catch (e) {
+        console.warn('Не удалось загрузить карты:', e);
+      }
+    })();
   }, []);
 
   // Сохраняем данные в localStorage при изменении
   useEffect(() => {
     localStorage.setItem('delivery_data', JSON.stringify(formData));
   }, [formData]);
+
+  // Если выбран сохранённый адрес — подставляем значения в форму
+  useEffect(() => {
+    if (selectedAddressId) {
+      const a = addresses.find(x => x.id === selectedAddressId);
+      if (a) {
+        setFormData(prev => ({
+          ...prev,
+          city: a.city || prev.city,
+          address: a.address || prev.address,
+          apartment: a.apartment || prev.apartment,
+          phone: a.phone || prev.phone,
+        }));
+      }
+    }
+  }, [selectedAddressId, addresses]);
 
   const steps = [
     { name: 'Адрес', icon: MapPin },
@@ -57,15 +110,26 @@ const DeliveryPaymentPage = () => {
   const handleNextStep = () => {
     // Валидация шага 1
     if (step === 1) {
-      if (!formData.city || !formData.address || !formData.phone) {
-        alert('Пожалуйста, заполните все поля');
-        return;
+      if (useSavedAddress) {
+        if (!selectedAddressId) {
+          alert('Пожалуйста, выберите сохранённый адрес');
+          return;
+        }
+      } else {
+        if (!formData.city || !formData.address || !formData.phone) {
+          alert('Пожалуйста, заполните все поля');
+          return;
+        }
       }
     }
     // Валидация шага 2
     if (step === 2) {
       if (!formData.paymentMethod) {
         alert('Пожалуйста, выберите способ оплаты');
+        return;
+      }
+      if (formData.paymentMethod === 'card' && !selectedPaymentId) {
+        alert('Пожалуйста, выберите сохранённую карту или добавьте новую в профиле');
         return;
       }
       handlePayment();
@@ -87,6 +151,11 @@ const DeliveryPaymentPage = () => {
         items: items,
         total: getTotalPrice(),
         delivery: formData,
+        addressId: selectedAddressId,
+        paymentMethodId: selectedPaymentId,
+        paymentMethodLabel: formData.paymentMethod === 'card' && selectedPaymentId
+          ? (() => { const pm = paymentMethods.find(p => p.id === selectedPaymentId); return pm ? `${pm.brand || 'Карта'} ${pm.card_number_masked || '••••'}` : 'Карточка'; })()
+          : (formData.paymentMethod === 'card' ? 'Карточка' : 'Наличные'),
         status: 'Завершён',
       };
 
@@ -134,49 +203,104 @@ const DeliveryPaymentPage = () => {
             </h2>
 
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
-                  placeholder="Введите ваш город"
-                  className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
-                />
+              <div className="flex items-center space-x-4">
+                <label className="inline-flex items-center text-sm text-gray-800">
+                  <input
+                    type="radio"
+                    name="address_mode"
+                    checked={!useSavedAddress}
+                    onChange={() => setUseSavedAddress(false)}
+                    className="mr-2"
+                  />
+                  Ввести адрес вручную
+                </label>
+                <label className="inline-flex items-center text-sm text-gray-800">
+                  <input
+                    type="radio"
+                    name="address_mode"
+                    checked={useSavedAddress}
+                    onChange={() => setUseSavedAddress(true)}
+                    className="mr-2"
+                  />
+                  Выбрать сохранённый адрес
+                </label>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Улица и дом *</label>
-                <input
-                  type="text"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  placeholder="Улица, дом"
-                  className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
-                />
-              </div>
+              {useSavedAddress && (
+                <div className="space-y-2">
+                  {addresses.length === 0 && (
+                    <p className="text-sm text-gray-600">У вас нет сохранённых адресов в профиле.</p>
+                  )}
+                  {addresses.map((a) => (
+                    <label
+                      key={a.id}
+                      className={`flex items-center p-3 border rounded-lg cursor-pointer transition ${
+                        selectedAddressId === a.id ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="saved_address"
+                        checked={selectedAddressId === a.id}
+                        onChange={() => setSelectedAddressId(a.id)}
+                        className="w-5 h-5"
+                      />
+                      <div className="ml-3 text-sm">
+                        <div className="font-medium text-gray-900">{a.city}, {a.address}{a.apartment ? `, ${a.apartment}` : ''}</div>
+                        <div className="text-gray-700">{a.phone}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Квартира / подъезд</label>
-                <input
-                  type="text"
-                  value={formData.apartment}
-                  onChange={(e) => handleInputChange('apartment', e.target.value)}
-                  placeholder="Квартира, офис (опционально)"
-                  className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
-                />
-              </div>
+              {!useSavedAddress && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                    <input
+                      type="text"
+                      value={formData.city}
+                      onChange={(e) => handleInputChange('city', e.target.value)}
+                      placeholder="Введите ваш город"
+                      className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Телефон *</label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  placeholder="+7 (700) 000-00-00"
-                  className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Улица и дом *</label>
+                    <input
+                      type="text"
+                      value={formData.address}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      placeholder="Улица, дом"
+                      className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Квартира / подъезд</label>
+                    <input
+                      type="text"
+                      value={formData.apartment}
+                      onChange={(e) => handleInputChange('apartment', e.target.value)}
+                      placeholder="Квартира, офис (опционально)"
+                      className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Телефон *</label>
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      placeholder="+7 (700) 000-00-00"
+                      className="w-full p-3 border border-gray-300 rounded-lg bg-white text-black placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             <button
@@ -211,24 +335,48 @@ const DeliveryPaymentPage = () => {
             <div className="space-y-3">
               <p className="font-semibold text-gray-800">Выберите способ оплаты:</p>
 
-              <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${
-                formData.paymentMethod === 'card'
-                  ? 'border-indigo-600 bg-indigo-50'
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}>
-                <input
-                  type="radio"
-                  name="payment"
-                  value="card"
-                  checked={formData.paymentMethod === 'card'}
-                  onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
-                  className="w-5 h-5 text-indigo-600"
-                />
-                <div className="ml-3">
-                  <p className="font-semibold text-gray-800">💳 Оплата карточкой</p>
-                  <p className="text-sm text-gray-600">Visa, MasterCard, Kaspi</p>
-                </div>
-              </label>
+              {paymentMethods && paymentMethods.length > 0 ? (
+                paymentMethods.map((pm) => (
+                  <label key={pm.id} className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${
+                    selectedPaymentId === pm.id ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300 hover:border-gray-400'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="payment"
+                      value={`card_${pm.id}`}
+                      checked={selectedPaymentId === pm.id && formData.paymentMethod === 'card'}
+                      onChange={() => {
+                        setSelectedPaymentId(pm.id);
+                        handleInputChange('paymentMethod', 'card');
+                      }}
+                      className="w-5 h-5 text-indigo-600"
+                    />
+                    <div className="ml-3">
+                      <p className="font-semibold text-gray-900">💳 {pm.brand ? pm.brand : 'Карта'} {pm.card_number_masked ? pm.card_number_masked : '••••'}</p>
+                      <p className="text-sm text-gray-700">{pm.is_default ? 'По умолчанию' : 'Сохранённая карта'}</p>
+                    </div>
+                  </label>
+                ))
+              ) : (
+                <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${
+                  formData.paymentMethod === 'card'
+                    ? 'border-indigo-600 bg-indigo-50'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="card"
+                    checked={formData.paymentMethod === 'card'}
+                    onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
+                    className="w-5 h-5 text-indigo-600"
+                  />
+                  <div className="ml-3">
+                    <p className="font-semibold text-gray-900">💳 Оплата карточкой</p>
+                    <p className="text-sm text-gray-700">Visa, MasterCard, Kaspi</p>
+                  </div>
+                </label>
+              )}
 
               <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${
                 formData.paymentMethod === 'cash'
@@ -276,10 +424,18 @@ const DeliveryPaymentPage = () => {
             <p className="text-xl text-gray-600 mb-6">Заказ принят и передан на сборку.</p>
             
             <div className="bg-gray-50 p-4 rounded-lg mb-6 text-left">
-              <p className="text-sm text-gray-600"><strong>Город доставки:</strong> {formData.city}</p>
-              <p className="text-sm text-gray-600"><strong>Адрес:</strong> {formData.address} {formData.apartment ? `, ${formData.apartment}` : ''}</p>
-              <p className="text-sm text-gray-600"><strong>Телефон:</strong> {formData.phone}</p>
-              <p className="text-sm text-gray-600"><strong>Способ оплаты:</strong> {formData.paymentMethod === 'card' ? 'Карточка' : 'Наличные'}</p>
+              <p className="text-sm text-gray-700"><strong>Город доставки:</strong> {formData.city}</p>
+              <p className="text-sm text-gray-700"><strong>Адрес:</strong> {formData.address} {formData.apartment ? `, ${formData.apartment}` : ''}</p>
+              <p className="text-sm text-gray-700"><strong>Телефон:</strong> {formData.phone}</p>
+              {selectedAddressId && <p className="text-sm text-gray-600"><strong>Идентификатор адреса:</strong> #{selectedAddressId}</p>}
+              <p className="text-sm text-gray-600"><strong>Способ оплаты:</strong>{' '}
+                {formData.paymentMethod === 'card' && selectedPaymentId
+                  ? (() => {
+                      const pm = paymentMethods.find(p => p.id === selectedPaymentId);
+                      return pm ? `${pm.brand || 'Карта'} •••• ${pm.last4 || '****'}` : 'Карточка';
+                    })()
+                  : (formData.paymentMethod === 'card' ? 'Карточка' : 'Наличные')}
+              </p>
             </div>
 
             <div className="space-y-3">

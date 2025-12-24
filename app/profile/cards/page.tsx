@@ -193,14 +193,14 @@ export default function CardsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4">
         {cards.map((card) => (
           <div key={card.id} className={`border rounded-xl p-4 flex items-center justify-between ${card.is_default ? 'border-indigo-200 bg-indigo-50' : 'border-gray-200 bg-white'}`}>
             <div className="flex items-center gap-3">
-              <CreditCard className="w-6 h-6 text-gray-600" />
+              <CreditCard className="w-6 h-6 text-gray-700" />
               <div>
                 <div className="font-medium text-gray-900">{card.card_brand} {card.card_number_masked}</div>
-                <div className="text-sm text-gray-500">Срок действия {String(card.expiry_month).padStart(2, '0')}/{card.expiry_year}{card.is_default && <span className="ml-2 text-indigo-600 font-medium">(Основная)</span>}</div>
+                <div className="text-sm text-gray-700">Срок действия {String(card.expiry_month).padStart(2, '0')}/{card.expiry_year}{card.is_default && <span className="ml-2 text-indigo-600 font-medium">(Основная)</span>}</div>
               </div>
             </div>
             <div className="flex gap-4 text-sm">
@@ -210,7 +210,7 @@ export default function CardsPage() {
           </div>
         ))}
 
-        <button onClick={openAddForm} className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex items-center justify-center text-gray-500 hover:border-indigo-300 hover:text-indigo-600 hover:bg-gray-50 transition-all">
+        <button onClick={openAddForm} className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex items-center justify-center text-gray-700 hover:border-indigo-300 hover:text-indigo-600 hover:bg-gray-50 transition-all">
           <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-3"><Plus className="w-6 h-6" /></div>
           <span className="font-medium">Добавить новую карту</span>
         </button>
