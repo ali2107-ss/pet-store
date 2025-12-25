@@ -66,29 +66,36 @@ const ReviewsPage = () => {
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !content) return;
+  e.preventDefault();
+  setLoading(true);
 
-    setLoading(true);
-    const { error } = await supabase
-      .from('reviews')
-      .insert([{ 
-        user_name: name, 
-        content: content, 
-        rating: rating 
-      }]);
+  try {
+    // Отправляем данные на наш СОБСТВЕННЫЙ бэкенд (API), а не напрямую в базу
+    const response = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, content, rating }),
+    });
 
-    if (error) {
-      alert("Ошибка: " + error.message);
+    const result = await response.json();
+
+    if (!response.ok) {
+      // Если бэкенд вернул ошибку валидации (400)
+      alert(result.error);
     } else {
+      // Если всё успешно
       setName('');
       setContent('');
       setRating(5);
       setIsModalOpen(false);
-      fetchReviews();
+      fetchReviews(); // Обновляем список
     }
+  } catch (err) {
+    alert("Критическая ошибка при отправке");
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   const averageRating = realReviews.length > 0 
     ? parseFloat((realReviews.reduce((sum, r) => sum + r.rating, 0) / realReviews.length).toFixed(1)) 
