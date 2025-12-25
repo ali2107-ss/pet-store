@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import supabase from "../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
 

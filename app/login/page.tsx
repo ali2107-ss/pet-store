@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { User, Lock, Mail, ArrowRight } from 'lucide-react';
-import supabase from '../../lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
 const AuthPage = () => {

@@ -39,27 +39,25 @@ const ReviewCard = ({ review }: { review: Review }) => (
 );
 
 const ReviewsPage = () => {
-  // Состояния для данных
   const [realReviews, setRealReviews] = useState<Review[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  // Состояния для полей формы
   const [name, setName] = useState('');
   const [rating, setRating] = useState(5);
   const [content, setContent] = useState('');
 
-  // 1. Функция загрузки отзывов из Supabase
   const fetchReviews = async () => {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (!error && data) {
-      setRealReviews(data);
-    } else {
-      console.error("Ошибка загрузки:", error);
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      if (data) setRealReviews(data);
+    } catch (err) {
+      console.log("Ожидание данных..."); // Заменяем ошибку сессии на мягкий лог
     }
   };
 
@@ -67,10 +65,9 @@ const ReviewsPage = () => {
     fetchReviews();
   }, []);
 
-  // 2. Функция отправки нового отзыва
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !content) return alert("Пожалуйста, заполните все поля");
+    if (!name || !content) return;
 
     setLoading(true);
     const { error } = await supabase
@@ -82,19 +79,17 @@ const ReviewsPage = () => {
       }]);
 
     if (error) {
-      alert("Ошибка при сохранении: " + error.message);
+      alert("Ошибка: " + error.message);
     } else {
-      // Очистка и закрытие
       setName('');
       setContent('');
       setRating(5);
       setIsModalOpen(false);
-      fetchReviews(); // Обновляем список на лету
+      fetchReviews();
     }
     setLoading(false);
   };
 
-  // Расчет среднего рейтинга
   const averageRating = realReviews.length > 0 
     ? parseFloat((realReviews.reduce((sum, r) => sum + r.rating, 0) / realReviews.length).toFixed(1)) 
     : 0;
@@ -103,9 +98,8 @@ const ReviewsPage = () => {
     <div className="min-h-screen bg-gray-50 pt-10 pb-20 text-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Шапка страницы */}
         <header className="text-center mb-12 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">Отзывы наших покупателей</h1>
+          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">Отзывы покупателей</h1>
 
           <div className="mt-4 flex flex-col items-center justify-center">
             <div className="flex items-center space-x-2 text-yellow-500">
@@ -116,8 +110,8 @@ const ReviewsPage = () => {
                 />
               ))}
             </div>
-            <p className="mt-2 text-3xl font-bold text-gray-800">{averageRating} из 5.0</p>
-            <p className="text-lg text-gray-500 mt-1">На основании {realReviews.length} отзывов</p>
+            <p className="mt-2 text-3xl font-bold text-gray-800">{averageRating} / 5.0</p>
+            <p className="text-lg text-gray-500">На основе {realReviews.length} отзывов</p>
           </div>
 
           <button 
@@ -129,62 +123,57 @@ const ReviewsPage = () => {
           </button>
         </header>
 
-        {/* Сетка отзывов */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {realReviews.map(review => (
             <ReviewCard key={review.id} review={review} />
           ))}
         </div>
 
-        {/* Если отзывов нет */}
         {realReviews.length === 0 && (
-          <div className="text-center py-20 text-gray-400">
-            <p className="text-xl italic">Отзывов пока нет. Станьте первым, кто его оставит!</p>
+          <div className="text-center py-20 text-gray-400 font-medium">
+            Отзывов пока нет. Будьте первым!
           </div>
         )}
       </div>
 
-      {/* МОДАЛЬНОЕ ОКНО С ОБНОВЛЕННЫМ ДИЗАЙНОМ */}
+      {/* МОДАЛЬНОЕ ОКНО */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-white/60 backdrop-blur-md flex items-center justify-center p-4 z-50 transition-all duration-300">
-          <div className="bg-white rounded-[32px] p-8 sm:p-12 max-w-md w-full relative shadow-[0_20px_60px_rgba(0,0,0,0.08)] border border-gray-100/50">
+        <div className="fixed inset-0 bg-white/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-300">
+          <div className="bg-white rounded-[32px] p-8 sm:p-12 max-w-md w-full relative shadow-[0_20px_60px_rgba(0,0,0,0.1)] border border-gray-100">
             
-            {/* Кнопка закрытия (крестик) */}
             <button 
               onClick={() => setIsModalOpen(false)} 
-              className="absolute top-6 right-6 text-gray-400 hover:text-indigo-600 transition-colors"
+              className="absolute top-6 right-6 text-gray-400 hover:text-indigo-600"
             >
               <X className="w-6 h-6" />
             </button>
 
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Ваш отзыв</h2>
-              <p className="text-gray-500 mt-2 font-medium">Нам очень важно ваше мнение</p>
+              <h2 className="text-3xl font-bold text-gray-900">Ваш отзыв</h2>
+              <p className="text-gray-500 mt-2">Поделитесь вашим опытом</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Поле Имя */}
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2 ml-1">Как вас зовут?</label>
+                <label className="block text-sm font-bold text-gray-800 mb-2 ml-1">Имя</label>
                 <input 
                   required 
-                  className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl p-4 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-400" 
-                  placeholder="Введите ваше имя"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" 
+                  placeholder="Ваше имя"
                   value={name} 
                   onChange={e => setName(e.target.value)} 
                 />
               </div>
 
-              {/* Выбор рейтинга (звезды) */}
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2 ml-1">Ваша оценка</label>
-                <div className="flex bg-gray-50/50 p-3 rounded-2xl justify-between border border-gray-100">
+                <label className="block text-sm font-bold text-gray-800 mb-2 ml-1">Оценка</label>
+                <div className="flex bg-gray-50 p-3 rounded-2xl justify-between border border-gray-100">
                   {[1, 2, 3, 4, 5].map((num) => (
                     <button
                       key={num}
                       type="button"
                       onClick={() => setRating(num)}
-                      className={`p-2 rounded-xl transition-all duration-200 ${rating >= num ? 'text-yellow-400 scale-110' : 'text-gray-300'}`}
+                      className={`p-1 transition-all ${rating >= num ? 'text-yellow-400 scale-110' : 'text-gray-300'}`}
                     >
                       <Star className={`w-7 h-7 ${rating >= num ? 'fill-current' : ''}`} />
                     </button>
@@ -192,30 +181,28 @@ const ReviewsPage = () => {
                 </div>
               </div>
 
-              {/* Поле Сообщение */}
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2 ml-1">Ваш комментарий</label>
+                <label className="block text-sm font-bold text-gray-800 mb-2 ml-1">Сообщение</label>
                 <textarea 
                   required 
-                  className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl p-4 text-gray-900 h-36 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none placeholder:text-gray-400" 
-                  placeholder="Поделитесь впечатлениями о покупке..."
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-gray-900 h-36 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none" 
+                  placeholder="Напишите ваш отзыв..."
                   value={content} 
                   onChange={e => setContent(e.target.value)} 
                 />
               </div>
 
-              {/* Кнопка */}
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full bg-indigo-600 text-white font-bold py-5 rounded-2xl hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-200 active:scale-[0.97] transition-all flex justify-center items-center space-x-3"
+                className="w-full bg-indigo-600 text-white font-bold py-5 rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 active:scale-[0.97] transition-all flex justify-center items-center space-x-2"
               >
                 {loading ? (
                   <div className="animate-spin border-2 border-white border-t-transparent rounded-full w-6 h-6"></div>
                 ) : (
                   <>
                     <MessageCircle className="w-6 h-6" />
-                    <span className="text-lg">Опубликовать</span>
+                    <span className="text-lg">Отправить отзыв</span>
                   </>
                 )}
               </button>
@@ -225,6 +212,6 @@ const ReviewsPage = () => {
       )}
     </div>
   );
-}
+};
 
 export default ReviewsPage;

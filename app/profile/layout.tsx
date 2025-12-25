@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { User, ShoppingBag, MapPin, Heart, LogOut, Settings, CreditCard, Package } from 'lucide-react';
-import supabase from '../../lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient';
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
