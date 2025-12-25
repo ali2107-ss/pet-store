@@ -1,34 +1,41 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseClient'; // Используем админ-клиент для надежности
+import { supabaseAdmin } from '@/lib/supabaseClient';
 
 export async function POST(request: Request) {
+  // Объявляем startTime в самом начале функции, чтобы он был доступен везде
+  const startTime = Date.now();
+
   try {
     const body = await request.json();
     const { name, content, rating } = body;
 
-    // --- ВАЛИДАЦИЯ (ТО, ЧТО ДЕЛАЕТ БЭКЕНД "ПРОЖАРЕННЫМ") ---
-    
-    // 1. Проверка на пустоту
+    console.log(`[POST] /api/reviews - Request received from: ${name}`);
+
+    // --- 1. ВАЛИДАЦИЯ ДАННЫХ ---
     if (!name || !content || !rating) {
-      return NextResponse.json({ error: 'Все поля обязательны' }, { status: 400 });
+      return NextResponse.json({ error: 'Заполните все обязательные поля' }, { status: 400 });
     }
 
-    // 2. Проверка длины имени
-    if (name.length < 2) {
-      return NextResponse.json({ error: 'Имя слишком короткое' }, { status: 400 });
+    if (content.length < 10) {
+      return NextResponse.json({ error: 'Отзыв слишком короткий (минимум 10 символов)' }, { status: 400 });
     }
 
-    // 3. Проверка текста отзыва (защита от спама)
-    if (content.length < 10 || content.length > 500) {
-      return NextResponse.json({ error: 'Отзыв должен быть от 10 до 500 символов' }, { status: 400 });
+    // --- 2. ЗАЩИТА ОТ ДУБЛИКАТОВ (АНТИ-СПАМ) ---
+    const { data: existingReview } = await supabaseAdmin
+      .from('reviews')
+      .select('id')
+      .eq('user_name', name)
+      .eq('content', content)
+      .maybeSingle(); // Используем maybeSingle, чтобы не было ошибки, если ничего не найдено
+
+    if (existingReview) {
+      return NextResponse.json(
+        { error: 'Вы уже оставили точно такой же отзыв!' }, 
+        { status: 400 }
+      );
     }
 
-    // 4. Проверка рейтинга (защита от взлома значений)
-    if (rating < 1 || rating > 5) {
-      return NextResponse.json({ error: 'Рейтинг должен быть от 1 до 5' }, { status: 400 });
-    }
-
-    // --- ЗАПИСЬ В БАЗУ ---
+    // --- 3. ЗАПИСЬ В БАЗУ ---
     const { data, error } = await supabaseAdmin
       .from('reviews')
       .insert([{ 
@@ -38,22 +45,33 @@ export async function POST(request: Request) {
       }])
       .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error(`[DATABASE ERROR] ${error.message}`);
+      return NextResponse.json({ error: 'Ошибка базы данных' }, { status: 500 });
+    }
 
-    return NextResponse.json({ message: 'Отзыв успешно добавлен', data }, { status: 201 });
+    // Теперь startTime точно доступен здесь
+    const duration = Date.now() - startTime;
+    console.log(`[SUCCESS] Review created in ${duration}ms`);
+
+    return NextResponse.json({ success: true, data }, { status: 201 });
 
   } catch (error: any) {
-    return NextResponse.json({ error: 'Ошибка сервера: ' + error.message }, { status: 500 });
+    console.error(`[SERVER CRASH] ${error.message}`);
+    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 });
   }
 }
 
-// Метод GET для получения отзывов через API
 export async function GET() {
-  const { data, error } = await supabaseAdmin
-    .from('reviews')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('reviews')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+    if (error) throw error;
+    return NextResponse.json(data || []);
+  } catch (err) {
+    return NextResponse.json({ error: 'Ошибка при получении данных' }, { status: 500 });
+  }
 }
